@@ -4,7 +4,7 @@
 # Stage 2 installs production dependencies only and copies the three dist folders,
 # so the runtime image carries no compilers, sources or dev tooling.
 
-FROM node:24-alpine AS build
+FROM node:26-alpine AS build
 WORKDIR /app
 
 # Manifests first: the dependency layer stays cached until a package.json or the lockfile changes.
@@ -22,7 +22,7 @@ COPY apps/server/src apps/server/src
 COPY apps/web apps/web
 RUN npm run build
 
-FROM node:24-alpine AS runtime
+FROM node:26-alpine AS runtime
 WORKDIR /app
 # Pick up Alpine security patches released after the base image was published.
 RUN apk upgrade --no-cache
