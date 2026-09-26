@@ -1,6 +1,6 @@
 # Sign Se Pehle — understand every clause before you sign
 
-> **Version 0.1.0** — Gemini-powered legal document explainer for India. Live on Google Cloud Run (asia-south1).
+> **Version 0.1.0** — Gemini-powered legal document explainer for India. Live on Google Cloud Run (asia-south2, Delhi).
 
 **Paste or photograph any Indian legal document — a rent agreement, job offer, loan, insurance policy
 or app terms — and see what every clause means for _you_, in your language, before you sign it.**
@@ -8,13 +8,13 @@ Gemini reads and explains the document; a deterministic rule engine checks the d
 against a curated table of Indian laws; every quote is verified against your text; and a what-if
 simulator shows the money at stake. _Information, not legal advice._
 
-- **Live app:** https://sign-se-pehle-767171449038.asia-south1.run.app
-- **Health (shows the live Gemini chain):** https://sign-se-pehle-767171449038.asia-south1.run.app/api/health
+- **Live app:** https://sign-se-pehle-767171449038.asia-south2.run.app
+- **Health (shows the live Gemini chain):** https://sign-se-pehle-767171449038.asia-south2.run.app/api/health
 - Built with **Google Antigravity + Gemini**.
 
 **30-second check for evaluators**
 
-1. `curl https://sign-se-pehle-767171449038.asia-south1.run.app/api/health` → `{"status":"ok","version":"0.1.0","ai":{"configured":true,…}}`
+1. `curl https://sign-se-pehle-767171449038.asia-south2.run.app/api/health` → `{"status":"ok","version":"0.1.0","ai":{"configured":true,…}}`
 2. Open the live app, paste any clause (e.g. _"The tenant shall pay a security deposit of Rs. 1,50,000, refundable at the landlord's sole discretion."_), choose **Tenant**, press **Explain this document** — the report is labelled **Explained by Gemini** with the model name and timing.
 3. Ask a question in the **Ask this document** box — answers cite verified quotes or say _not in the document_.
 4. Clone and run with **zero keys**: `npm install && npm test && npm run build && npm start` → every feature works in labelled **offline mode**.
