@@ -14,6 +14,7 @@ export * from './schemas/limits.js';
 export * from './schemas/facts.js';
 export * from './schemas/analysis.js';
 export * from './schemas/requests.js';
+export * from './schemas/file-signature.js';
 export * from './schemas/features.js';
 export * from './knowledge/laws.js';
 export * from './knowledge/red-flag-rules.js';
