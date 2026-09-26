@@ -55,6 +55,8 @@ request ─► zod validate ─► (file? Gemini vision transcription) ─► re
 | Flash-lite model first, failover chain | `config.ts`, `genai-client.ts` | ~4 s full analysis in our benchmark vs ~27 s for a thinking model |
 | Response cache keyed by SHA-256 of redacted text + role + language (LRU 50, 30 min) | `analysis-service.ts` | Re-opening or re-running the same document costs nothing |
 | In-flight concurrency cap per instance, 429 beyond | `analysis-service.ts` | Bounded memory and spend under bursts |
+| Gemini calls cancelled when the reader disconnects (AbortSignal from the HTTP response to the SDK) | `routes/analyze.ts`, `genai-client.ts` | Closed tabs never burn model quota or instance time |
+| Upload type verified from magic bytes before any AI call | `schemas/file-signature.ts` | Junk or disguised files are rejected in microseconds, not after a paid model call |
 | Input caps (60k chars, 5 MB) and output token caps | `schemas/limits.ts`, `genai-client.ts` | Bounded work per request |
 | Stateless server, no database | whole server | Horizontal scaling with no sessions; nothing to secure at rest |
 | Deterministic engine in core, not LLM | `packages/core/src/engine` | Exact, instant, free, testable |

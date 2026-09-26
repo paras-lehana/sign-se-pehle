@@ -17,7 +17,12 @@ export function registerAnalyze(router: Router, ctx: RouteContext): void {
     ctx.aiLimiter,
     ctx.uploadJson,
     validate(analyzeRequestSchema, async (body, _req, res) => {
-      sendResult(res, await ctx.gate.run(() => ctx.analysis.analyze(body)));
+      // Efficiency: if the reader closes the tab, stop the Gemini call instead of paying for it.
+      const controller = new AbortController();
+      res.on('close', () => {
+        if (!res.writableEnded) controller.abort();
+      });
+      sendResult(res, await ctx.gate.run(() => ctx.analysis.analyze(body, controller.signal)));
     }),
   );
 }

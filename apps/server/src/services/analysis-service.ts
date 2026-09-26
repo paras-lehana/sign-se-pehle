@@ -70,6 +70,7 @@ async function readDocument(
   input: DocumentInput,
   genai: GenAiClient,
   tracker: ProvenanceTracker,
+  signal?: AbortSignal,
 ): Promise<Result<ReadDocument>> {
   if (input.type === 'text') return ok({ text: input.text, source: 'text' });
   if (!genai.configured) {
@@ -83,6 +84,7 @@ async function readDocument(
     prompt: prompt.prompt,
     files: [{ mimeType: input.mimeType, dataBase64: input.dataBase64 }],
     maxOutputTokens: TRANSCRIPTION_MAX_OUTPUT_TOKENS,
+    ...(signal === undefined ? {} : { signal }),
   });
   if (!result.ok) {
     const message = 'We could not read that file right now. Please try again or paste the text.';
@@ -105,7 +107,8 @@ function analysisId(text: string, req: AnalyzeRequest): string {
 }
 
 export interface AnalysisService {
-  analyze(req: AnalyzeRequest): Promise<Result<Analysis>>;
+  /** `signal` aborts in-flight Gemini calls when the reader disconnects (no wasted quota). */
+  analyze(req: AnalyzeRequest, signal?: AbortSignal): Promise<Result<Analysis>>;
 }
 
 /**
@@ -117,7 +120,12 @@ export function createAnalysisService(deps: ServiceDeps): AnalysisService {
   const { genai, now, logger } = deps;
   const cache = createLruCache<Analysis>({ maxEntries: CACHE_MAX_ENTRIES, ttlMs: CACHE_TTL_MS, now });
 
-  const explain = async (text: string, req: AnalyzeRequest, tracker: ProvenanceTracker) => {
+  const explain = async (
+    text: string,
+    req: AnalyzeRequest,
+    tracker: ProvenanceTracker,
+    signal: AbortSignal | undefined,
+  ) => {
     if (genai.configured) {
       const prompt = buildAnalysisPrompt({
         text,
@@ -131,6 +139,7 @@ export function createAnalysisService(deps: ServiceDeps): AnalysisService {
         prompt: prompt.prompt,
         schema: analysisModelOutputSchema,
         jsonSchema: ANALYSIS_JSON_SCHEMA,
+        ...(signal === undefined ? {} : { signal }),
       });
       if (result.ok) {
         tracker.model('explain', result.value.model, result.value.ms);
@@ -149,9 +158,9 @@ export function createAnalysisService(deps: ServiceDeps): AnalysisService {
   };
 
   return {
-    async analyze(req) {
+    async analyze(req, signal) {
       const tracker = createProvenanceTracker(now);
-      const read = await readDocument(req.document, genai, tracker);
+      const read = await readDocument(req.document, genai, tracker, signal);
       if (!read.ok) return read;
       const redactStartedAt = now();
       const redacted = redactPii(read.value.text);
@@ -160,7 +169,7 @@ export function createAnalysisService(deps: ServiceDeps): AnalysisService {
       const cached = cache.get(id);
       if (cached !== undefined) return ok(cached);
 
-      const { output, mode } = await explain(redacted.text, req, tracker);
+      const { output, mode } = await explain(redacted.text, req, tracker, signal);
       const analysis = assembleAnalysis({
         id,
         output,
