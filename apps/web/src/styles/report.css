@@ -1,0 +1,240 @@
+/**
+ * Report, compare and about presentation styles.
+ *
+ * Responsibility: cards, chips, clause accordion, tables, score dial and pipeline.
+ * Boundary: risk is always shown with text and an icon; colour only reinforces it.
+ */
+.report__header {
+  margin: var(--space-6) 0 var(--space-4);
+}
+
+.report__meta,
+.report__privacy,
+.report-section__intro,
+.muted {
+  color: var(--color-text-muted);
+}
+
+.provenance {
+  display: inline-flex;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: 999px;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  background: var(--color-surface-alt);
+}
+
+.provenance--gemini {
+  box-shadow: inset 0 0 0 1px var(--color-primary);
+}
+
+.chip,
+.tag,
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0.125rem var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.chip--high {
+  background: var(--color-high-soft);
+  color: var(--color-high);
+}
+
+.chip--medium {
+  background: var(--color-medium-soft);
+  color: var(--color-medium);
+}
+
+.chip--low {
+  background: var(--color-low-soft);
+  color: var(--color-low);
+}
+
+.tag {
+  background: var(--color-surface-alt);
+  color: var(--color-text);
+  font-weight: 600;
+  margin-right: var(--space-2);
+}
+
+.badge--verified {
+  color: var(--color-verified);
+}
+
+.badge--unverified {
+  color: var(--color-medium);
+}
+
+.summary {
+  display: grid;
+  gap: var(--space-4);
+  align-items: center;
+}
+
+@media (min-width: 48rem) {
+  .summary {
+    grid-template-columns: 1fr auto;
+  }
+}
+
+.summary__one-line {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+}
+
+.score {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.score__ring {
+  width: 7.5rem;
+  height: 7.5rem;
+}
+
+.score__track,
+.score__value {
+  fill: none;
+  stroke-width: 10;
+}
+
+.score__track {
+  stroke: var(--color-surface-alt);
+}
+
+.score__value {
+  stroke-linecap: round;
+  transition: stroke-dasharray var(--motion-slow) ease;
+}
+
+.score--balanced .score__value {
+  stroke: var(--color-low);
+}
+
+.score--review .score__value {
+  stroke: var(--color-accent);
+}
+
+.score--high-risk .score__value {
+  stroke: var(--color-high);
+}
+
+.score__number {
+  fill: var(--color-text);
+  font-size: 2rem;
+  font-weight: 800;
+}
+
+.score figcaption {
+  display: flex;
+  flex-direction: column;
+}
+
+.score__caption {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.flag-list,
+.clause-list,
+.date-list,
+.issue-list,
+.service-list,
+.aid-list,
+.ask-thread {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.flag {
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-left: 5px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.flag--high {
+  border-left-color: var(--color-high);
+}
+
+.flag--medium {
+  border-left-color: var(--color-medium);
+}
+
+.flag--low {
+  border-left-color: var(--color-low);
+}
+
+.flag__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.flag__title {
+  margin: 0;
+}
+
+.flag__law {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+  font-size: var(--font-size-sm);
+}
+
+.flag__law-summary {
+  color: var(--color-text-muted);
+}
+
+.clause {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.clause__summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-height: var(--touch-target);
+  padding: var(--space-2) var(--space-3);
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.clause__body {
+  padding: 0 var(--space-3) var(--space-3);
+}
+
+.clause__quote {
+  margin: 0 0 var(--space-3);
+  padding: var(--space-3);
+  background: var(--color-surface-alt);
+  border-radius: var(--radius-sm);
+}
+
+.clause__quote blockquote {
+  margin: 0 0 var(--space-2);
+  padding-left: var(--space-3);
+  border-left: 3px solid var(--color-accent);
+  font-family: var(--font-serif);
+  white-space: pre-wrap;
+}
+
+.clause__quote--unverified p:first-child {
+  font-style: italic;
+}

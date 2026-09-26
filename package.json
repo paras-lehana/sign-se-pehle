@@ -1,0 +1,54 @@
+{
+  "name": "sign-se-pehle",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Sign Se Pehle — understand any Indian legal document before you sign it. Gemini-powered plain-language explanations, law-anchored red flags, what-if consequences and lawyer-ready briefs. Information, not legal advice.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "workspaces": [
+    "packages/core",
+    "apps/server",
+    "apps/web"
+  ],
+  "scripts": {
+    "build:core": "npm run build -w @sign-se-pehle/core",
+    "build": "npm run build:core && npm run build -w @sign-se-pehle/web && npm run build -w @sign-se-pehle/server",
+    "dev": "npm run build:core && concurrently -n server,web -c blue,green \"npm run dev -w @sign-se-pehle/server\" \"npm run dev -w @sign-se-pehle/web\"",
+    "start": "npm run start -w @sign-se-pehle/server",
+    "test": "npm run build:core && npm run test -w @sign-se-pehle/core && npm run test -w @sign-se-pehle/server && npm run test -w @sign-se-pehle/web",
+    "test:core": "npm run test -w @sign-se-pehle/core",
+    "test:server": "npm run build:core && npm run test -w @sign-se-pehle/server",
+    "test:web": "npm run build:core && npm run test -w @sign-se-pehle/web",
+    "test:coverage": "npm run build:core && npm run test:coverage --workspaces",
+    "type-check": "npm run build:core && npm run type-check --workspaces && tsc -p tsconfig.e2e.json --noEmit",
+    "lint": "eslint . --max-warnings 0",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "e2e": "playwright test",
+    "e2e:headed": "playwright test --headed",
+    "a11y": "playwright test e2e/a11y.spec.ts",
+    "dup-check": "jscpd packages/core/src apps/server/src apps/web/src --min-tokens 50 --threshold 0 --ignore \"**/__tests__/**\"",
+    "verify": "npm run type-check && npm run lint && npm run test:coverage && npm run build"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@eslint/js": "^9.39.5",
+    "@playwright/test": "^1.63.0",
+    "@types/node": "^24.0.0",
+    "@vitest/coverage-v8": "^5.0.2",
+    "concurrently": "^10.0.5",
+    "eslint": "^9.39.5",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.12.0",
+    "jscpd": "^5.3.2",
+    "prettier": "^3.9.9",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.70.1",
+    "vitest": "^5.0.2"
+  }
+}

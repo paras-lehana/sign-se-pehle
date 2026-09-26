@@ -1,0 +1,174 @@
+/**
+ * Secondary report blocks, tables, Q&A thread and the about-page pipeline.
+ *
+ * Responsibility: list rows, data tables and the pipeline diagram. Boundary: core
+ * report cards, chips and the score dial live in report.css.
+ */
+.date-item,
+.service,
+.issue {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+
+.date-item__label,
+.service__name {
+  font-weight: 700;
+}
+
+.service__purpose {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.obligations {
+  display: grid;
+  gap: var(--space-4);
+}
+
+@media (min-width: 48rem) {
+  .obligations {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.checklist__item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  min-height: var(--touch-target);
+  padding-block: var(--space-2);
+  cursor: pointer;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  margin-bottom: var(--space-4);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table caption {
+  text-align: left;
+  font-weight: 700;
+  padding-bottom: var(--space-2);
+}
+
+.data-table th,
+.data-table td {
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.data-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.data-table tfoot th,
+.data-table tfoot td {
+  font-weight: 800;
+  border-bottom: none;
+}
+
+.table-note {
+  display: block;
+  font-weight: 400;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.ask-turn__question {
+  font-weight: 700;
+}
+
+.ask-turn__note {
+  font-weight: 600;
+  color: var(--color-medium);
+}
+
+.pipeline {
+  display: grid;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: stage;
+}
+
+.pipeline__stage {
+  position: relative;
+  padding: var(--space-3) var(--space-4) var(--space-3) calc(var(--space-6) + var(--space-4));
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  counter-increment: stage;
+}
+
+.pipeline__stage::before {
+  content: counter(stage);
+  position: absolute;
+  left: var(--space-3);
+  top: var(--space-3);
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-weight: 800;
+}
+
+.pipeline__stage:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: calc(var(--space-3) + 1rem - 1px);
+  bottom: calc(-1 * var(--space-4) - 1px);
+  width: 2px;
+  height: var(--space-4);
+  background: var(--color-accent);
+}
+
+.pipeline__name {
+  margin-bottom: var(--space-1);
+}
+
+.pipeline__engine {
+  margin-bottom: var(--space-1);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--color-link);
+}
+
+.pipeline__detail {
+  margin: 0;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.chip-button {
+  min-height: var(--touch-target);
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--color-primary);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-primary);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  text-align: left;
+}

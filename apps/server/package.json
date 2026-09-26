@@ -1,0 +1,31 @@
+{
+  "name": "@sign-se-pehle/server",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Single Cloud Run service: JSON API (Gemini-backed analysis pipeline) plus the static web build on the same origin.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "scripts": {
+    "dev": "tsx watch --env-file-if-exists=.env src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node --env-file-if-exists=.env dist/index.js",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "type-check": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.test.json --noEmit"
+  },
+  "dependencies": {
+    "@google/genai": "^2.24.0",
+    "@sign-se-pehle/core": "0.1.0",
+    "compression": "^1.8.2",
+    "express": "^5.2.1",
+    "helmet": "^8.3.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/compression": "^1.8.1",
+    "@types/express": "^5.0.6",
+    "@types/supertest": "^7.2.1",
+    "supertest": "^7.3.0",
+    "tsx": "^4.23.15"
+  }
+}
