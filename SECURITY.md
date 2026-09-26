@@ -17,7 +17,9 @@ steer the AI.
 | 7 | XSS / clickjacking in the web app | Strict Content-Security-Policy with **no `unsafe-inline`** (`script-src 'self'; style-src 'self'`), `frame-ancestors 'none'`, COOP/CORP same-origin, HSTS, nosniff, Referrer-Policy, Permissions-Policy; React escapes all rendered text; no `dangerouslySetInnerHTML` | [`apps/server/src/server.ts`](apps/server/src/server.ts) |
 | 8 | Secret leakage | Key only in Secret Manager, mounted by reference; `.env` gitignored; key never logged, never in URLs, never in error text; config is the only `process.env` reader | [`apps/server/src/config.ts`](apps/server/src/config.ts), [`scripts/deploy.sh`](scripts/deploy.sh) |
 | 9 | Upstream error details leaking internals | Gemini failures mapped to `UPSTREAM_FAILURE` / `UPSTREAM_TIMEOUT` with user-safe copy; stack traces never sent | [`packages/core/src/errors.ts`](packages/core/src/errors.ts) |
-| 10 | Supply chain | Lockfile + `npm ci`; CI audit gate on production deps; GitHub Actions pinned to commit SHAs with read-only token; minimal runtime image running as the non-root `node` user | [`.github/workflows/ci.yml`](.github/workflows/ci.yml), [`Dockerfile`](Dockerfile) |
+| 10 | Supply chain | Lockfile + `npm ci`; `npm audit` reports 0 vulnerabilities (production and dev); CI audit gate; GitHub Actions pinned to commit SHAs with read-only tokens; minimal runtime image running as the non-root `node` user | [`.github/workflows/ci.yml`](.github/workflows/ci.yml), [`Dockerfile`](Dockerfile) |
+| 11 | Vulnerable code or dependencies reaching `main` | CodeQL (`security-extended` queries) on every push, pull request and weekly; Dependabot weekly updates for npm, GitHub Actions and the Docker base image | [`.github/workflows/codeql.yml`](.github/workflows/codeql.yml), [`.github/dependabot.yml`](.github/dependabot.yml) |
+| 12 | Protocol downgrade / cookie stripping | HSTS with `includeSubDomains` and `preload` (2-year max-age) | [`apps/server/src/server.ts`](apps/server/src/server.ts) |
 
 ## Data handling
 

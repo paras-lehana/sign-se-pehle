@@ -81,7 +81,11 @@ function securityHeaders(): ReturnType<typeof helmet> {
     },
     crossOriginOpenerPolicy: { policy: 'same-origin' },
     crossOriginResourcePolicy: { policy: 'same-origin' },
-    strictTransportSecurity: { maxAge: HSTS_MAX_AGE_SECONDS, includeSubDomains: true },
+    strictTransportSecurity: {
+      maxAge: HSTS_MAX_AGE_SECONDS,
+      includeSubDomains: true,
+      preload: true,
+    },
     referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
   });
 }
