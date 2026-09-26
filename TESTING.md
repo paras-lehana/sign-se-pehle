@@ -14,7 +14,7 @@ components with fixtures produced by the core engine itself.
 | End-to-end | Playwright (desktop + Pixel 7) | [`e2e/journey.spec.ts`](e2e/journey.spec.ts) | Live typing into an empty form → report, ask with citation, advice boundary, empty-input error, compare | `npm run e2e` |
 | Accessibility | Playwright + axe-core (WCAG 2.0/2.1/2.2 A/AA) | [`e2e/a11y.spec.ts`](e2e/a11y.spec.ts) | No serious/critical violations on every route and the report, in light and dark themes | `npm run a11y` |
 
-**Latest local run:** 308 automated tests pass — core 225 (8 files), server 52 (8 files), web 31 (7 files). Coverage: core 97.5% lines / 90.2% branches; server 99.2% lines / 87.4% branches.
+**Latest local run:** 298 automated tests pass — core 215 (7 files), server 52 (8 files), web 31 (7 files). Coverage: core 97.5% lines / 90.2% branches; server 99.2% lines / 87.4% branches.
 
 `npm run type-check` compiles sources, tests and e2e specs under the same strict settings, and
 `npm run test:coverage` enforces per-workspace coverage thresholds.

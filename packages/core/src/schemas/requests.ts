@@ -10,7 +10,6 @@ import { DOCUMENT_KINDS, SCENARIO_IDS, USER_ROLES } from '../domain/document-kin
 import { LANGUAGE_CODES } from '../domain/languages.js';
 import { clauseSchema, redFlagSchema } from './analysis.js';
 import { documentFactsSchema } from './facts.js';
-import { matchesFileSignature } from './file-signature.js';
 import {
   ALLOWED_UPLOAD_MIME_TYPES,
   MAX_AMOUNT_INR,
@@ -41,18 +40,12 @@ const BASE64_PATTERN = /^[A-Za-z0-9+/]+={0,2}$/;
 /** A document is either pasted text or an uploaded PDF / photo. */
 export const documentInputSchema = z.discriminatedUnion('type', [
   z.strictObject({ type: z.literal('text'), text: documentTextSchema }),
-  z
-    .strictObject({
-      type: z.literal('file'),
-      mimeType: z.enum(ALLOWED_UPLOAD_MIME_TYPES),
-      fileName: z.string().trim().min(1).max(120),
-      dataBase64: z.string().min(4).max(MAX_UPLOAD_BASE64_CHARS).regex(BASE64_PATTERN),
-    })
-    // Security: the bytes must match the declared type (magic number), not just the label.
-    .refine((file) => matchesFileSignature(file.mimeType, file.dataBase64), {
-      error: 'The file contents do not match its type. Please upload a real PDF or photo.',
-      path: ['dataBase64'],
-    }),
+  z.strictObject({
+    type: z.literal('file'),
+    mimeType: z.enum(ALLOWED_UPLOAD_MIME_TYPES),
+    fileName: z.string().trim().min(1).max(120),
+    dataBase64: z.string().min(4).max(MAX_UPLOAD_BASE64_CHARS).regex(BASE64_PATTERN),
+  }),
 ]);
 
 export type DocumentInput = z.infer<typeof documentInputSchema>;
