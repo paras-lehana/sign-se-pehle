@@ -1,12 +1,12 @@
 /**
- * Kavach score dial (0–100) with a text band label.
+ * Risk score dial (0–100) with a text band label.
  *
  * Responsibility: show the score as a ring plus words, so the meaning never depends
  * on colour. Boundary: the ring is drawn with SVG attributes, not inline styles,
  * because the production CSP forbids inline style attributes.
  */
 import type { ReactElement } from 'react';
-import type { KavachScore, ScoreBand } from '@sign-se-pehle/core';
+import type { RiskScore, ScoreBand } from '@sign-se-pehle/core';
 
 /** Reader-facing band names, exported so tests assert the same copy. */
 export const BAND_LABELS: Readonly<Record<ScoreBand, string>> = {
@@ -23,7 +23,7 @@ const VIEWBOX_SIZE = 120;
 const CENTER = VIEWBOX_SIZE / 2;
 
 interface ScoreDialProps {
-  readonly score: KavachScore;
+  readonly score: RiskScore;
 }
 
 export function ScoreDial({ score }: ScoreDialProps): ReactElement {
@@ -35,7 +35,7 @@ export function ScoreDial({ score }: ScoreDialProps): ReactElement {
         className="score__ring"
         viewBox={`0 0 ${VIEWBOX_SIZE} ${VIEWBOX_SIZE}`}
         role="img"
-        aria-label={`Kavach score ${score.value} out of ${MAX_SCORE}: ${label}`}
+        aria-label={`Risk score ${score.value} out of ${MAX_SCORE}: ${label}`}
       >
         <circle className="score__track" cx={CENTER} cy={CENTER} r={RING_RADIUS} />
         <circle
@@ -57,7 +57,7 @@ export function ScoreDial({ score }: ScoreDialProps): ReactElement {
         </text>
       </svg>
       <figcaption>
-        <span className="score__caption">Kavach score</span>
+        <span className="score__caption">Risk score</span>
         <strong className="score__band">{label}</strong>
       </figcaption>
     </figure>

@@ -49,7 +49,7 @@ describe('Report', () => {
     render(<Report analysis={analysis} />);
     expect(screen.getByText(BAND_LABELS[analysis.score.band])).toBeInTheDocument();
     expect(
-      screen.getByRole('img', { name: new RegExp(`Kavach score ${analysis.score.value}`) }),
+      screen.getByRole('img', { name: new RegExp(`Risk score ${analysis.score.value}`) }),
     ).toBeInTheDocument();
   });
 

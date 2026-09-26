@@ -1,12 +1,12 @@
 /**
- * Kavach score — one number summarising how balanced a document is for the reader.
+ * Risk score — one number summarising how balanced a document is for the reader.
  *
  * Responsibility: start at 100 and subtract named penalties for red flags and for
  * risky clauses no flag already covers; map the value to a band. Boundary: a reading
  * aid, not a legal opinion — the reasons list says exactly what drove the number.
  */
 import type { RiskLevel } from '../domain/clauses.js';
-import type { Clause, KavachScore, RedFlag, ScoreBand } from '../schemas/analysis.js';
+import type { Clause, RiskScore, RedFlag, ScoreBand } from '../schemas/analysis.js';
 
 const MAX_SCORE = 100;
 const MIN_SCORE = 0;
@@ -37,11 +37,11 @@ export function scoreBand(value: number): ScoreBand {
 }
 
 /**
- * Computes the Kavach score from red flags and clause risk ratings.
+ * Computes the Risk score from red flags and clause risk ratings.
  * @example
  * computeScore([], []); // { value: 100, band: 'balanced', reasons: ['No rule-based red flags were found.'] }
  */
-export function computeScore(flags: readonly RedFlag[], clauses: readonly Clause[]): KavachScore {
+export function computeScore(flags: readonly RedFlag[], clauses: readonly Clause[]): RiskScore {
   const covered = new Set(flags.flatMap((flag) => flag.clauseIds));
   const flagPenalty = flags.reduce((sum, flag) => sum + FLAG_PENALTY[flag.severity], 0);
   const uncovered = clauses.filter((clause) => !covered.has(clause.id));

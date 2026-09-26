@@ -13,7 +13,7 @@ test.describe('explain a document', () => {
     await textbox.fill(RENT_AGREEMENT);
     await page.getByRole('button', { name: 'Explain this document' }).click();
 
-    await expect(page.getByRole('heading', { level: 2, name: /red flags/i })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 3, name: /red flags/i })).toBeVisible();
     await expect(page.getByText(/security deposit/i).first()).toBeVisible();
     await expect(page.getByText(/explained by gemini|offline rules/i).first()).toBeVisible();
   });

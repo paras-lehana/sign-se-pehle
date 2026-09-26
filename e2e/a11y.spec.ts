@@ -32,7 +32,7 @@ for (const scheme of ['light', 'dark'] as const) {
       await page.goto('/');
       await page.getByLabel('Paste the document text').fill(RENT_AGREEMENT);
       await page.getByRole('button', { name: 'Explain this document' }).click();
-      await expect(page.getByRole('heading', { level: 2, name: /red flags/i })).toBeVisible();
+      await expect(page.getByRole('heading', { level: 3, name: /red flags/i })).toBeVisible();
       expect(await blockingViolations(page)).toEqual([]);
     });
   });

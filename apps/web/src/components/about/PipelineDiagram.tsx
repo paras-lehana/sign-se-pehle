@@ -38,7 +38,7 @@ const PIPELINE_STAGES = [
     name: 'Score and simulate',
     engine: 'Deterministic engine',
     detail:
-      'The Kavach score, money at stake and what-if results use only your document’s numbers.',
+      'The Risk score, money at stake and what-if results use only your document’s numbers.',
   },
 ] as const;
 

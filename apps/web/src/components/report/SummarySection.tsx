@@ -1,17 +1,17 @@
 /**
- * Report summary: one-line gist, key points and the Kavach score.
+ * Report summary: one-line gist, key points and the Risk score.
  *
  * Responsibility: the first thing a reader sees after analysis. Boundary: display only.
  */
 import type { ReactElement } from 'react';
-import type { KavachScore } from '@sign-se-pehle/core';
+import type { RiskScore } from '@sign-se-pehle/core';
 import type { Analysis } from '../../lib/api';
 import { ReportSection } from './ReportSection';
 import { ScoreDial } from './ScoreDial';
 
 interface SummarySectionProps {
   readonly summary: Analysis['summary'];
-  readonly score: KavachScore;
+  readonly score: RiskScore;
 }
 
 export function SummarySection({ summary, score }: SummarySectionProps): ReactElement {

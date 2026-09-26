@@ -97,14 +97,14 @@ export const SCORE_BANDS = ['balanced', 'review', 'high-risk'] as const;
 
 export type ScoreBand = (typeof SCORE_BANDS)[number];
 
-export const kavachScoreSchema = z.strictObject({
+export const riskScoreSchema = z.strictObject({
   /** 0–100; higher means fewer and milder concerns for the reader's role. */
   value: z.number().int().min(0).max(100),
   band: z.enum(SCORE_BANDS),
   reasons: lines(8),
 });
 
-export type KavachScore = z.infer<typeof kavachScoreSchema>;
+export type RiskScore = z.infer<typeof riskScoreSchema>;
 
 export const REDACTION_TYPES = [
   'aadhaar',
@@ -172,7 +172,7 @@ export const analysisSchema = z.strictObject({
     items: z.array(moneyItemSchema).max(12),
     totalInr: z.number().finite().min(0),
   }),
-  score: kavachScoreSchema,
+  score: riskScoreSchema,
   checklist: lines(10),
   lawyerQuestions: lines(10),
   document: z.strictObject({
