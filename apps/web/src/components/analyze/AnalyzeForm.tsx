@@ -8,13 +8,14 @@
  */
 import { type FormEvent, type ReactElement, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
-import { type AnalyzeRequest, DEFAULT_LANGUAGE, analyzeRequestSchema } from '@sign-se-pehle/core';
+import { type AnalyzeRequest, analyzeRequestSchema } from '@sign-se-pehle/core';
 import { prepareUpload, validateUpload } from '../../lib/file';
 import type { SampleDocument } from '../../lib/samples';
 import { Icon } from '../ui/Icon';
-import { DocumentOptions, type DocumentOptionsValue } from './DocumentOptions';
+import { DocumentOptions } from './DocumentOptions';
 import { type InputTabId, InputTabs } from './InputTabs';
 import { SelectedFile } from './SelectedFile';
+import { toRequestOptions, useDocumentOptions } from './use-document-options';
 
 interface AnalyzeFormProps {
   readonly busy: boolean;
@@ -33,13 +34,10 @@ export function AnalyzeForm({ busy, onSubmit }: AnalyzeFormProps): ReactElement 
   const [fileError, setFileError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [status, setStatus] = useState('');
-  const [options, setOptions] = useState<DocumentOptionsValue>({
-    role: undefined,
-    language: DEFAULT_LANGUAGE,
-    kind: undefined,
-  });
+  const { options, setOptions, applySample, textChanged, leaveSample } = useDocumentOptions();
 
   function chooseFile(picked: File | null, error: string | null): void {
+    if (picked !== null) leaveSample();
     setFile(picked);
     setFileError(error);
   }
@@ -58,13 +56,18 @@ export function AnalyzeForm({ busy, onSubmit }: AnalyzeFormProps): ReactElement 
     // flushSync so the Paste panel is visible before focus moves into its textarea.
     flushSync(() => {
       setText(sample.text);
-      setOptions({ language: options.language, kind: sample.kind, role: sample.role });
+      applySample(sample);
       clearFile();
       setFormError(null);
       setTab('paste');
       setStatus(`Sample loaded: ${sample.label}. Review it, then choose Explain this document.`);
     });
     textareaRef.current?.focus();
+  }
+
+  function changeText(next: string): void {
+    setText(next);
+    textChanged(next);
   }
 
   async function buildDocument(): Promise<AnalyzeRequest['document'] | string> {
@@ -83,12 +86,7 @@ export function AnalyzeForm({ busy, onSubmit }: AnalyzeFormProps): ReactElement 
       setFormError(document);
       return;
     }
-    const parsed = analyzeRequestSchema.safeParse({
-      document,
-      language: options.language,
-      ...(options.role === undefined ? {} : { role: options.role }),
-      ...(options.kind === undefined ? {} : { kindHint: options.kind }),
-    });
+    const parsed = analyzeRequestSchema.safeParse({ document, ...toRequestOptions(options) });
     if (!parsed.success) {
       setFormError(parsed.error.issues[0]?.message ?? EMPTY_INPUT_MESSAGE);
       return;
@@ -111,7 +109,7 @@ export function AnalyzeForm({ busy, onSubmit }: AnalyzeFormProps): ReactElement 
           onSelect={setTab}
           text={text}
           textInvalid={formError !== null && file === null}
-          onTextChange={setText}
+          onTextChange={changeText}
           textareaRef={textareaRef}
           fileKey={fileKey}
           fileErrorId={FILE_ERROR_ID}

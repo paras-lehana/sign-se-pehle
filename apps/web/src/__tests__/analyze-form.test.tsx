@@ -1,6 +1,7 @@
 /**
  * Analyze form tests: empty start, the four input tabs, validation messages, the typed
- * payload, uploads, camera photos and samples (which fill the form but never submit).
+ * payload, uploads, camera photos and samples (which fill the form but never submit, and
+ * whose type and role never carry over to the reader's own document).
  */
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -14,6 +15,13 @@ const RENT_CLAUSE =
   '1. RENT. The Tenant shall pay a monthly rent of Rs. 20,000 (Rupees Twenty Thousand only) on or before the 5th day of every month.';
 
 const INPUT_TABS = ['Paste', 'Upload', 'Camera', 'Samples'] as const;
+
+/** The insurance sample: its kind and role differ from the rent clause the reader pastes. */
+function insuranceSample(): (typeof SAMPLE_DOCUMENTS)[number] {
+  const sample = SAMPLE_DOCUMENTS.find((candidate) => candidate.kind === 'insurance');
+  if (sample === undefined) throw new Error('insurance sample missing');
+  return sample;
+}
 
 function setup(): { onSubmit: ReturnType<typeof vi.fn<(payload: AnalyzeRequest) => void>> } {
   const onSubmit = vi.fn<(payload: AnalyzeRequest) => void>();
@@ -127,5 +135,47 @@ describe('AnalyzeForm', () => {
     expect(screen.getByLabelText(/Document type/)).toHaveValue(sample.kind);
     expect(screen.getByLabelText(/I am the/)).toHaveValue(sample.role);
     expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it('drops the sample type and role once the reader pastes their own document', async () => {
+    const { onSubmit } = setup();
+    const user = userEvent.setup();
+    const sample = insuranceSample();
+    await user.click(screen.getByRole('tab', { name: 'Samples' }));
+    await user.click(screen.getByRole('button', { name: new RegExp(`^${sample.label}`) }));
+    await user.clear(screen.getByLabelText('Paste the document text'));
+    await user.paste(RENT_CLAUSE);
+    expect(screen.getByLabelText(/Document type/)).toHaveValue('');
+    await user.click(screen.getByRole('button', { name: 'Explain this document' }));
+    expect(onSubmit).toHaveBeenCalledWith({ document: { type: 'text', text: RENT_CLAUSE }, language: 'en' });
+  });
+
+  it('keeps the sample type and role while the reader edits a detail', async () => {
+    setup();
+    const user = userEvent.setup();
+    const sample = insuranceSample();
+    await user.click(screen.getByRole('tab', { name: 'Samples' }));
+    await user.click(screen.getByRole('button', { name: new RegExp(`^${sample.label}`) }));
+    await user.type(screen.getByLabelText('Paste the document text'), ' Extra clause.');
+    expect(screen.getByLabelText(/Document type/)).toHaveValue(sample.kind);
+    expect(screen.getByLabelText(/I am the/)).toHaveValue(sample.role);
+  });
+
+  it('keeps choices the reader made when a photo replaces the sample', async () => {
+    setup();
+    const user = userEvent.setup();
+    const sample = insuranceSample();
+    await user.click(screen.getByRole('tab', { name: 'Samples' }));
+    await user.click(screen.getByRole('button', { name: new RegExp(`^${sample.label}`) }));
+    await user.selectOptions(screen.getByLabelText(/Document type/), 'rental');
+    await user.selectOptions(screen.getByLabelText('Explain in'), 'hi');
+    await user.click(screen.getByRole('tab', { name: 'Camera' }));
+    await user.upload(
+      screen.getByLabelText(/Take a photo/),
+      new File(['jpeg-bytes'], 'page-1.jpg', { type: 'image/jpeg' }),
+    );
+    expect(screen.getByLabelText(/Document type/)).toHaveValue('rental');
+    expect(screen.getByLabelText(/I am the/)).toHaveValue('');
+    expect(screen.getByLabelText('Explain in')).toHaveValue('hi');
   });
 });

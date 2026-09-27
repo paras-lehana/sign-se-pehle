@@ -33,10 +33,17 @@ All notable changes to this project are documented here. The format follows
 - Route and panel code splitting; Gemini served through Vertex AI in production.
 - The score is called "Risk score" everywhere.
 
+### Fixed
+
+- A sample's document type and role no longer carry over when the reader pastes their own
+  document, uploads a file or takes a photo (the type hint overrides Gemini's classification,
+  so a rent agreement could have been checked against insurance rules). Choices the reader
+  made themselves are kept.
+
 ### Verified
 
 - `npm run type-check`, `npm run lint` (zero warnings), `npm run dup-check` (0 clones).
-- `npm run test:coverage`: 544 tests (core 344, server 83, web 117).
+- `npm run test:coverage`: 547 tests (core 344, server 83, web 120).
 - `npx playwright test`: 32 tests (journeys + axe, desktop and Pixel 7, both themes).
 
 ## [0.1.0] — 2026-09-26
