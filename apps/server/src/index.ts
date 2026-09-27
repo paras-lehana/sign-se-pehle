@@ -8,8 +8,9 @@
 import { loadConfig } from './config.js';
 import { createJsonLogger } from './logger.js';
 import { buildApp } from './server.js';
-import { createGeminiCaller } from './services/gemini-sdk.js';
+import { createGeminiCaller, createGeminiSpeechCaller } from './services/gemini-sdk.js';
 import { createGenAiClient, createOfflineGenAiClient } from './services/genai-client.js';
+import { createOfflineSpeechClient, createSpeechClient } from './services/speech-client.js';
 
 /** Cloud Run allows 10 s between SIGTERM and SIGKILL; exit a little before that. */
 const SHUTDOWN_GRACE_MS = 8_000;
@@ -26,12 +27,23 @@ const genai =
         now: Date.now,
       });
 
-const app = buildApp(config, { genai, now: Date.now, logger });
+const speech =
+  config.geminiApiKey === undefined
+    ? createOfflineSpeechClient()
+    : createSpeechClient({
+        caller: createGeminiSpeechCaller(config.geminiApiKey),
+        models: config.geminiTtsModels,
+        timeoutMs: config.geminiTimeoutMs,
+        now: Date.now,
+      });
+
+const app = buildApp(config, { genai, speech, now: Date.now, logger });
 const server = app.listen(config.port, () => {
   logger.log('INFO', 'server listening', {
     port: config.port,
     version: config.appVersion,
     aiConfigured: genai.configured,
+    speechConfigured: speech.configured,
   });
 });
 

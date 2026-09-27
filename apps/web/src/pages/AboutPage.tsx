@@ -9,20 +9,21 @@ import type { ReactElement } from 'react';
 import { GoogleServices } from '../components/about/GoogleServices';
 import { LegalAid } from '../components/about/LegalAid';
 import { PipelineDiagram } from '../components/about/PipelineDiagram';
+import { PageHero } from '../components/ui/PageHero';
 import { usePageTitle } from '../lib/use-page-title';
 
 export function AboutPage(): ReactElement {
   usePageTitle('How it works');
   return (
     <>
-      <h1>How Sign Se Pehle works</h1>
-      <p className="lede">
+      <PageHero eyebrow="How it works" title="How Sign Se Pehle works">
         “Sign Se Pehle” means “before you sign”. It turns dense Indian legal documents into plain
         language, checks them against Indian law and shows you exactly which words it relied on.
-      </p>
+      </PageHero>
       <PipelineDiagram />
       <GoogleServices />
-      <section className="card" aria-labelledby="privacy-heading">
+      <div className="about-grid">
+        <section className="card" aria-labelledby="privacy-heading">
         <h2 id="privacy-heading">Your privacy</h2>
         <ul>
           <li>
@@ -39,14 +40,15 @@ export function AboutPage(): ReactElement {
           </li>
         </ul>
       </section>
-      <section className="card" aria-labelledby="disclaimer-heading">
-        <h2 id="disclaimer-heading">Information, not legal advice</h2>
-        <p>
-          Explanations can be incomplete or wrong. Red flags point to official sources so you can
-          check them yourself. Sign Se Pehle never tells you whether to sign, and never predicts
-          what a court would decide.
-        </p>
-      </section>
+        <section className="card" aria-labelledby="disclaimer-heading">
+          <h2 id="disclaimer-heading">Information, not legal advice</h2>
+          <p>
+            Explanations can be incomplete or wrong. Red flags point to official sources so you can
+            check them yourself. Sign Se Pehle never tells you whether to sign, and never predicts
+            what a court would decide.
+          </p>
+        </section>
+      </div>
       <LegalAid />
     </>
   );

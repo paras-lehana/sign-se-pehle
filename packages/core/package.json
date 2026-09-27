@@ -1,6 +1,6 @@
 {
   "name": "@sign-se-pehle/core",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "Pure, deterministic legal-domain engine: schemas, curated Indian-law knowledge base, red-flag rules, what-if simulator, PII redaction and prompt contracts. No I/O, no clock, no network.",
   "type": "module",

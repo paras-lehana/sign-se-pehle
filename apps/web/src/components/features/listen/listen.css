@@ -1,0 +1,43 @@
+/**
+ * Listen and voice-question buttons.
+ *
+ * Responsibility: compact toggle buttons whose pressed state is shown by saffron, an icon
+ * change and the label (Listen → Stop), plus a gentle pulse while the microphone is on.
+ * Boundary: tokens only; the pulse is skipped when reduced motion is requested.
+ */
+.listen,
+.voice-question {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+
+.listen__button[aria-pressed='true'],
+.voice-question__button[aria-pressed='true'] {
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
+}
+
+.listen__icon {
+  display: inline-block;
+  min-width: 1em;
+  color: var(--color-accent);
+}
+
+.listen__status,
+.voice-question__status {
+  display: inline;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .voice-question__button[aria-pressed='true'] {
+    animation: voice-pulse 1.6s var(--ease-in-out) infinite;
+  }
+}
+
+@keyframes voice-pulse {
+  50% {
+    box-shadow: 0 0 0 6px var(--color-accent-soft);
+  }
+}

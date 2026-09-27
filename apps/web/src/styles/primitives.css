@@ -1,0 +1,121 @@
+/**
+ * Shared primitives: glass surfaces, cards, eyebrows, section heads, hover lift and the
+ * motion policy.
+ *
+ * Responsibility: the small vocabulary every area composes. Boundary: no layout of its
+ * own. Motion policy: every element's resting state is its final state, so
+ * `animation: none` (reduced motion or the pause toggle) never hides content.
+ */
+.plain-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Glass: the one surface recipe. Blur only on large panels (it is costly on scroll). */
+.glass {
+  background: var(--color-glass);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-1);
+}
+
+.glass--blur {
+  backdrop-filter: var(--blur-glass);
+}
+
+.card {
+  margin-bottom: var(--space-5);
+  padding: var(--space-5);
+  background: var(--color-glass);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-1);
+  backdrop-filter: var(--blur-glass);
+}
+
+@media (min-width: 48rem) {
+  .card {
+    padding: var(--space-6);
+  }
+}
+
+/* A small glass label (report meta, bento help pills). */
+.pill {
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-glass);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-3);
+  color: var(--color-accent);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.lede {
+  max-width: var(--reading-width);
+  color: var(--color-text-muted);
+  font-size: var(--text-lg);
+}
+
+.muted {
+  color: var(--color-text-muted);
+}
+
+.gradient-text {
+  background: var(--gradient-text);
+  background-clip: text;
+  color: transparent;
+}
+
+.section-head {
+  max-width: var(--reading-width);
+  margin-bottom: var(--space-6);
+}
+
+/* Hover lift: pointer devices only, and only when motion is welcome. */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .lift {
+    transition:
+      transform var(--duration-base) var(--ease-out),
+      box-shadow var(--duration-base) var(--ease-out),
+      border-color var(--duration-base) var(--ease-out);
+  }
+
+  .lift:hover {
+    transform: translateY(-3px);
+    border-color: var(--color-border-strong);
+    box-shadow: var(--shadow-2);
+  }
+}
+
+/* Motion policy. Scroll-linked indicators are not autonomous motion, so they stay. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *:not(.scroll-linked),
+  *::before,
+  *::after {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* WCAG 2.2.2: the header's pause control stops every looping decoration. */
+:root[data-motion='paused'] *:not(.scroll-linked),
+:root[data-motion='paused'] *::before,
+:root[data-motion='paused'] *::after {
+  animation: none !important;
+}

@@ -52,6 +52,9 @@ export const documentFactsSchema = z.strictObject({
   // Property purchase
   totalConsiderationInr: amountInr.optional(),
   bookingAmountInr: amountInr.optional(),
+  // Legal notices: the date on the notice and the days it gives to reply or comply
+  noticeDate: z.iso.date().optional(),
+  responseDays: days.optional(),
   // Where the document was signed and where disputes go
   executionCity: shortText.optional(),
   disputeSeatCity: shortText.optional(),
@@ -216,6 +219,12 @@ export const FACT_DEFINITIONS: Readonly<Record<NumericFactKey, FactDefinition>> 
     unit: 'inr',
     betterWhen: 'lower',
     kinds: ['property-purchase'],
+  },
+  responseDays: {
+    label: 'Days given to respond',
+    unit: 'days',
+    betterWhen: 'higher',
+    kinds: ['legal-notice'],
   },
 };
 

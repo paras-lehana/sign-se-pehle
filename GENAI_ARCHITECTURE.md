@@ -13,9 +13,13 @@ key or a prompt.
 | 2 | Explain the document clause by clause | `POST /api/analyze` | `buildAnalysisPrompt` | `analysisModelOutputSchema` in [`genai/model-output.ts`](packages/core/src/genai/model-output.ts), sent as `responseJsonSchema` | Quote verification, law-anchored red flags, score, money at stake ([`pipeline/assemble-analysis.ts`](packages/core/src/pipeline/assemble-analysis.ts)) |
 | 3 | Answer questions about the document | `POST /api/ask` | `buildAskPrompt` | `askModelOutputSchema` | Cited quotes verified; unverified answers downgraded to "not in the document" ([`pipeline/assemble-ask.ts`](packages/core/src/pipeline/assemble-ask.ts)) |
 | 4 | Compare two drafts | `POST /api/compare` | `buildComparePrompt` | `compareModelOutputSchema` | Numbers compared deterministically ([`engine/compare-facts.ts`](packages/core/src/engine/compare-facts.ts)) |
+| 5 | Fairer wording + a ready message | `POST /api/negotiate` | `buildNegotiationPrompt` | `negotiationModelOutputSchema` | Each proposed change must match a real clause quote; law references are attached from the flags, never from the model ([`pipeline/assemble-negotiation.ts`](packages/core/src/pipeline/assemble-negotiation.ts)); offline drafter if Gemini is unavailable |
+| 6 | Read aloud in 11 languages | `POST /api/speech` | Plain text (no prompt template) | Audio (PCM 24 kHz) | Wrapped as WAV ([`audio/wav.ts`](packages/core/src/audio/wav.ts)); the browser's own voice is the fallback |
 
-All calls go through one gateway: [`apps/server/src/services/genai-client.ts`](apps/server/src/services/genai-client.ts)
-(`@google/genai` SDK, `models.generateContent`).
+Text calls go through one gateway, [`apps/server/src/services/genai-client.ts`](apps/server/src/services/genai-client.ts);
+speech has its own small client, [`services/speech-client.ts`](apps/server/src/services/speech-client.ts). Both use
+the `@google/genai` SDK (`models.generateContent`); in production the SDK is pointed at **Vertex AI**
+(`GOOGLE_GENAI_USE_VERTEXAI=true`), so usage is billed and governed by the Google Cloud project.
 
 ## Models and failover
 
@@ -23,6 +27,7 @@ All calls go through one gateway: [`apps/server/src/services/genai-client.ts`](a
 |---|---|---|
 | Primary | `gemini-3.5-flash-lite` | ~4 s for a full structured analysis of a two-page agreement in our benchmark |
 | Fallbacks | `gemini-3.1-flash-lite`, `gemini-3.5-flash` | Tried in order on 429 / 5xx / timeout; the last healthy model is remembered |
+| Speech | `gemini-3.1-flash-tts-preview`, then `gemini-2.5-flash-preview-tts` | ≈3 s for a short summary in our tests; voice "Kore" |
 | Output | `responseMimeType: application/json` + `responseJsonSchema` generated from zod (`z.toJSONSchema`) | One schema is the source of truth for the model contract and runtime validation |
 | Validation | Every response is parsed with the same zod schema | Malformed output never reaches the reader |
 | Fallback | Deterministic offline analyser ([`packages/core/src/offline`](packages/core/src/offline)) | Same report shape, labelled **Offline rules** in the UI |
@@ -44,7 +49,8 @@ All calls go through one gateway: [`apps/server/src/services/genai-client.ts`](a
 
 | Service | Role |
 |---|---|
-| Cloud Run (asia-south1) | Hosts the single service (API + web, same origin), min 1 instance so there is no cold start |
+| Vertex AI | Serves every Gemini text and speech call for the deployed app |
+| Cloud Run (asia-south1, mirror in asia-south2) | Hosts the single service (API + web, same origin), min 1 instance so there is no cold start |
 | Cloud Build + Artifact Registry | Builds the image from [`Dockerfile`](Dockerfile) via [`cloudbuild.yaml`](cloudbuild.yaml) and runs a post-deploy smoke test |
 | Secret Manager | Holds `GEMINI_API_KEY`, mounted by reference; least-privilege accessor binding ([`scripts/deploy.sh`](scripts/deploy.sh)) |
 | Cloud Logging | Structured JSON request logs (severity, route pattern, status, latency — never document text) |

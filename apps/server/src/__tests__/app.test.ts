@@ -88,6 +88,7 @@ describe('security headers', () => {
     expect(csp).toContain("default-src 'self'");
     expect(csp).toContain("script-src 'self'");
     expect(csp).toContain("frame-ancestors 'none'");
+    expect(csp).toContain("media-src 'self' blob:");
     expect(csp).not.toContain('unsafe-inline');
     expect(res.headers['cross-origin-opener-policy']).toBe('same-origin');
     expect(res.headers['cross-origin-resource-policy']).toBe('same-origin');

@@ -1,56 +1,44 @@
 /**
  * Light / dark theme switch.
  *
- * Responsibility: override the system colour scheme via `data-theme` on <html> and
- * remember the choice on this device. Boundary: storage may be unavailable (private
- * mode), so every access is guarded and the system preference remains the default.
+ * Responsibility: a pressed-state toggle for the dark theme that applies and remembers the
+ * choice. Boundary: storage and the <html> attribute live in preferences.ts; the default
+ * (no stored choice) is dark.
  */
 import { type ReactElement, useEffect, useState } from 'react';
-
-type Theme = 'light' | 'dark';
-
-const STORAGE_KEY = 'sign-se-pehle:theme';
-
-function readStoredTheme(): Theme | null {
-  try {
-    const stored = window.localStorage.getItem(STORAGE_KEY);
-    return stored === 'light' || stored === 'dark' ? stored : null;
-  } catch {
-    return null;
-  }
-}
-
-function systemTheme(): Theme {
-  return typeof window.matchMedia === 'function' &&
-    window.matchMedia('(prefers-color-scheme: dark)').matches
-    ? 'dark'
-    : 'light';
-}
-
-function storeTheme(theme: Theme): void {
-  try {
-    window.localStorage.setItem(STORAGE_KEY, theme);
-  } catch {
-    // Storage blocked (private mode): the choice still applies for this visit.
-  }
-}
+import { type Theme, THEME_STORAGE_KEY, applyTheme, initialTheme, storePreference } from './preferences';
 
 export function ThemeToggle(): ReactElement {
-  const [theme, setTheme] = useState<Theme>(() => readStoredTheme() ?? systemTheme());
+  const [theme, setTheme] = useState<Theme>(initialTheme);
 
   useEffect(() => {
-    document.documentElement.dataset['theme'] = theme;
+    applyTheme(theme);
   }, [theme]);
 
   function toggle(): void {
     const next: Theme = theme === 'dark' ? 'light' : 'dark';
     setTheme(next);
-    storeTheme(next);
+    storePreference(THEME_STORAGE_KEY, next);
   }
 
   return (
-    <button type="button" className="theme-toggle" aria-pressed={theme === 'dark'} onClick={toggle}>
-      <span aria-hidden="true">{theme === 'dark' ? '☾' : '☀'}</span>
+    <button
+      type="button"
+      className="icon-button"
+      aria-pressed={theme === 'dark'}
+      title="Dark theme"
+      onClick={toggle}
+    >
+      {theme === 'dark' ? (
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" />
+        </svg>
+      ) : (
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <circle cx="12" cy="12" r="4" />
+          <path d="M12 2.5v2M12 19.5v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M2.5 12h2M19.5 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" />
+        </svg>
+      )}
       <span className="visually-hidden">Dark theme</span>
     </button>
   );

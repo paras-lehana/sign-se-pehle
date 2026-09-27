@@ -1,0 +1,199 @@
+/**
+ * Next steps panel: reply countdown, forum cards, legal aid check and reminders.
+ *
+ * Responsibility: a big, calm countdown whose urgency is stated in words and shown by
+ * colour, forum cards in a responsive grid, and full-row tappable checkboxes. Boundary:
+ * tokens only.
+ */
+.next-steps__block,
+.legal-aid-check {
+  margin-top: var(--space-5);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-border);
+}
+
+.deadline {
+  padding: var(--space-5);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--color-glass-strong);
+}
+
+.deadline h4 {
+  margin-top: 0;
+}
+
+.deadline__count {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2) var(--space-3);
+  margin: 0 0 var(--space-3);
+}
+
+.deadline__number {
+  font-family: var(--font-display);
+  font-size: var(--text-hero);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.deadline__unit {
+  font-size: var(--text-lg);
+  font-weight: 650;
+}
+
+.deadline__urgency {
+  font-weight: 650;
+}
+
+.deadline--overdue,
+.deadline--urgent {
+  border-color: var(--color-high-edge);
+  background: var(--color-high-soft);
+}
+
+.deadline--overdue .deadline__number,
+.deadline--urgent .deadline__number {
+  color: var(--color-high);
+}
+
+.deadline--soon {
+  border-color: var(--color-medium-edge);
+}
+
+.deadline--soon .deadline__number {
+  color: var(--color-medium);
+}
+
+.deadline--comfortable {
+  border-color: var(--color-low-edge);
+}
+
+.deadline--comfortable .deadline__number {
+  color: var(--color-low);
+}
+
+.forum-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.forum {
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-glass);
+}
+
+.forum__name {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-base);
+  line-height: var(--leading-snug);
+}
+
+.forum__when {
+  margin: 0 0 var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.forum__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-4);
+  margin: 0;
+}
+
+.forum__links a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: var(--touch-target);
+  font-weight: 650;
+}
+
+.check-group {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+  margin: 0 0 var(--space-4);
+  padding: 0;
+  border: 0;
+}
+
+@media (min-width: 48rem) {
+  .check-group {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.check-group legend {
+  margin-bottom: var(--space-2);
+  padding: 0;
+  font-weight: 650;
+}
+
+.check-option {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  padding: var(--space-2) var(--space-3);
+  min-height: var(--touch-target);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.check-option input {
+  flex: none;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin: 0.15rem 0 0;
+  accent-color: var(--color-accent);
+}
+
+.check-option:has(input:checked) {
+  border-color: var(--color-accent-line);
+  background: var(--color-accent-soft);
+}
+
+.check-option:has(input:focus-visible) {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.eligibility {
+  margin-top: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--color-primary-line);
+  border-radius: var(--radius-md);
+  background: var(--color-primary-soft);
+}
+
+.eligibility--eligible {
+  border-color: var(--color-low-edge);
+  background: var(--color-low-soft);
+}
+
+.eligibility--likely {
+  border-color: var(--color-medium-edge);
+  background: var(--color-medium-soft);
+}
+
+.eligibility__title {
+  margin-top: 0;
+  font-size: var(--text-lg);
+  font-weight: 750;
+}
+
+.eligibility__reasons {
+  padding-inline-start: var(--space-5);
+}
+
+.eligibility__source {
+  margin-bottom: 0;
+  font-size: var(--text-sm);
+}

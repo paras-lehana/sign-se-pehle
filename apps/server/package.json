@@ -1,6 +1,6 @@
 {
   "name": "@sign-se-pehle/server",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "Single Cloud Run service: JSON API (Gemini-backed analysis pipeline) plus the static web build on the same origin.",
   "type": "module",
@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@google/genai": "^2.24.0",
-    "@sign-se-pehle/core": "0.1.0",
+    "@sign-se-pehle/core": "0.2.0",
     "compression": "^1.8.2",
     "express": "^5.2.1",
     "helmet": "^8.3.0",

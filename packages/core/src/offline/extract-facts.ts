@@ -26,6 +26,7 @@ const LOAN: readonly DocumentKind[] = ['loan'];
 const COVER: readonly DocumentKind[] = ['insurance'];
 const PROPERTY: readonly DocumentKind[] = ['property-purchase'];
 const ANY_TERM: readonly DocumentKind[] = ['rental', 'employment', 'service-contract', 'other'];
+const NOTICE: readonly DocumentKind[] = ['legal-notice'];
 
 /** The first match after each keyword wins; keywords are regex sources matched case-insensitively. */
 const FACT_PATTERNS: readonly FactPattern[] = [
@@ -52,6 +53,8 @@ const FACT_PATTERNS: readonly FactPattern[] = [
   { key: 'coPaymentPercent', keyword: 'co[- ]?pay\\w*', unit: 'percent', kinds: COVER },
   { key: 'totalConsiderationInr', keyword: 'total (?:price|consideration|cost)|sale consideration', unit: 'inr', kinds: PROPERTY },
   { key: 'bookingAmountInr', keyword: 'booking amount|application money|advance of', unit: 'inr', kinds: PROPERTY },
+  // Notices demand action "within 15 days of receipt"; the first such period is the reply window.
+  { key: 'responseDays', keyword: 'within', unit: 'days', kinds: NOTICE },
 ];
 
 const CURRENCY = '(?:\\u20B9|rs\\.?|inr|rupees)';

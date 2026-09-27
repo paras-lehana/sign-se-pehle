@@ -1,0 +1,147 @@
+/**
+ * Shared feature-panel styles: panel headings, action rows, status lines, option cards,
+ * law references and the privacy note.
+ *
+ * Responsibility: the building blocks every feature panel reuses. Boundary: tokens only.
+ */
+.feature-panel__title {
+  margin-top: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  line-height: var(--leading-snug);
+}
+
+.feature-panel__intro {
+  margin: 0 0 var(--space-5);
+  color: var(--color-text-muted);
+}
+
+.feature-panel h4 {
+  margin: var(--space-5) 0 var(--space-3);
+  font-size: var(--text-lg);
+  line-height: var(--leading-snug);
+}
+
+.feature-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-block: var(--space-4);
+}
+
+.feature-status {
+  display: block;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.copy-control {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Option cards: a native radio inside a large label, so the whole card is the target. */
+.choice-group {
+  min-width: 0;
+  margin: 0 0 var(--space-4);
+  padding: 0;
+  border: 0;
+}
+
+.choice-group__legend {
+  margin-bottom: var(--space-2);
+  padding: 0;
+  font-size: var(--text-sm);
+  font-weight: 650;
+}
+
+.choice-group__options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+  gap: var(--space-2);
+}
+
+.choice {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  column-gap: var(--space-3);
+  min-height: var(--touch-target);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-glass);
+  cursor: pointer;
+  transition:
+    border-color var(--duration-fast) ease,
+    background-color var(--duration-fast) ease;
+}
+
+.choice input {
+  grid-row: span 2;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin: 0;
+  accent-color: var(--color-accent);
+}
+
+.choice__label {
+  font-weight: 650;
+}
+
+.choice__hint {
+  grid-column: 2;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.choice:hover {
+  border-color: var(--color-primary);
+}
+
+.choice:has(input:checked) {
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
+}
+
+.choice:has(input:focus-visible) {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+.law-refs__title {
+  margin-bottom: var(--space-2);
+}
+
+.law-refs__list {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.law-refs__item a {
+  font-weight: 650;
+}
+
+.law-refs__summary {
+  display: block;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.privacy-note {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-4);
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--color-low-edge);
+  border-radius: var(--radius-pill);
+  background: var(--color-low-soft);
+  color: var(--color-low);
+  font-size: var(--text-sm);
+  font-weight: 650;
+}

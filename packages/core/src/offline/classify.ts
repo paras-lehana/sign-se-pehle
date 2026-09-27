@@ -118,6 +118,13 @@ const KIND_PATTERNS: Readonly<Record<Exclude<DocumentKind, 'other'>, readonly Re
   'online-terms': [/terms of (?:service|use)/gi, /privacy policy/gi, /\busers?\b/gi, /website|platform|\bapp\b/gi, /cookies/gi],
   'property-purchase': [/allottee|allotment/gi, /builder|developer|promoter/gi, /apartment|\bflat\b|unit no/gi, /agreement for sale|sale deed/gi, /carpet area/gi],
   'service-contract': [/service provider|freelanc|consultant|contractor/gi, /deliverables|scope of work|statement of work/gi, /invoice/gi],
+  'legal-notice': [
+    /legal notice|demand notice/gi,
+    /hereby called upon/gi,
+    /(?:my|our) client/gi,
+    /within (?:a period of )?\d{1,3}\s*(?:\([^)]{0,30}\)\s*)?days/gi,
+    /failing which/gi,
+  ],
 };
 
 /** A document needs at least this many keyword hits before we commit to a kind. */

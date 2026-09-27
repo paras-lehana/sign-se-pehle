@@ -44,6 +44,14 @@ export const GOOGLE_SERVICES: readonly ServiceCatalogEntry[] = [
     envVars: [],
   },
   {
+    id: 'gemini-tts',
+    name: 'Gemini text-to-speech',
+    status: 'live',
+    purpose: 'Reads summaries and answers aloud in a natural voice for readers who prefer listening; the browser’s own voice is the fallback.',
+    codePaths: ['apps/server/src/services/speech-client.ts', 'apps/server/src/services/gemini-sdk.ts', 'packages/core/src/audio/wav.ts'],
+    envVars: ['GEMINI_TTS_MODELS'],
+  },
+  {
     id: 'cloud-run',
     name: 'Cloud Run',
     status: 'ready',

@@ -6,9 +6,12 @@
  * calls here — the server sends these strings; the response shape is enforced by the
  * schemas in model-output.ts.
  */
-import { CLAUSE_CATEGORIES, CLAUSE_SIGNALS } from '../domain/clauses.js';
+import { CLAUSE_CATEGORIES, CLAUSE_SIGNALS, RISK_WEIGHT } from '../domain/clauses.js';
 import { type DocumentKind, KIND_PROFILES, ROLE_LABELS, type UserRole } from '../domain/document-kinds.js';
 import { type LanguageCode, LANGUAGES } from '../domain/languages.js';
+import type { Clause, RedFlag } from '../schemas/analysis.js';
+import { MAX_NEGOTIATION_ASKS, MAX_WHATSAPP_MESSAGE_CHARS } from '../schemas/limits.js';
+import type { NegotiationChannel, NegotiationTone } from '../schemas/requests.js';
 import { wrapUntrusted } from './prompt-boundary.js';
 
 /** The two strings every Gemini call needs. */
@@ -69,6 +72,7 @@ export function buildAnalysisPrompt(input: AnalysisPromptInput): PromptPair {
     `Tag signals only from this list, and only when the clause clearly shows them: ${CLAUSE_SIGNALS.join(', ')}.`,
     'Each "quote" must be copied exactly from the document (a sentence or two), never paraphrased.',
     'Extract a fact only if the document states it explicitly; leave it out otherwise. Amounts are in rupees, durations in days or months.',
+    'For a legal notice or demand letter, set kind to "legal-notice", noticeDate to the date written on the notice (YYYY-MM-DD) and responseDays to the days it gives to reply or comply.',
     'If the text is not a legal document, set kind to "other" and say so in the summary.',
   ].join('\n');
   const hint = input.kindHint === undefined ? '' : `The reader says this is a ${KIND_PROFILES[input.kindHint].label}.\n`;
@@ -157,4 +161,69 @@ export function buildTranscriptionPrompt(): PromptPair {
     ].join('\n'),
     prompt: 'Transcribe this document verbatim, keeping its numbering. Return only the text.',
   };
+}
+
+/**
+ * Clauses worth negotiating: high and medium risk only, most severe first (stable), capped so
+ * the request stays focused. Shared by the prompt and the offline drafter so both ask the same.
+ * @example
+ * negotiableClauses([lowClause, highClause]); // [highClause]
+ */
+export function negotiableClauses(clauses: readonly Clause[]): Clause[] {
+  return clauses
+    .filter((clause) => clause.risk !== 'low')
+    .sort((a, b) => RISK_WEIGHT[b.risk] - RISK_WEIGHT[a.risk])
+    .slice(0, MAX_NEGOTIATION_ASKS);
+}
+
+const TONE_RULES: Readonly<Record<NegotiationTone, string>> = {
+  polite: 'Tone: warm and polite. Thank them, explain each change briefly and ask whether it is possible.',
+  firm: 'Tone: firm but courteous. Say clearly which changes are requested and ask for a revised draft, without threats or deadlines.',
+};
+
+const CHANNEL_RULES: Readonly<Record<NegotiationChannel, string>> = {
+  whatsapp: `Channel: WhatsApp. Leave "subject" out. Keep "message" under ${MAX_WHATSAPP_MESSAGE_CHARS} characters: a short greeting, one line per change and a thank-you.`,
+  email: 'Channel: email. Give a short "subject", and a "message" with a greeting, one short paragraph per change and a sign-off ending with [Your name].',
+};
+
+export interface NegotiationPromptInput {
+  readonly kind: DocumentKind;
+  readonly role: UserRole;
+  readonly language: LanguageCode;
+  readonly tone: NegotiationTone;
+  readonly channel: NegotiationChannel;
+  readonly clauses: readonly Clause[];
+  readonly flags: readonly RedFlag[];
+  readonly nonce: string;
+}
+
+/**
+ * Builds the change-request prompt: fairer wording for the risky clauses plus a ready message.
+ * @example
+ * buildNegotiationPrompt({ kind: 'rental', role: 'tenant', language: 'hi', tone: 'polite', channel: 'whatsapp', clauses, flags, nonce: 'a1b2c3d4' });
+ */
+export function buildNegotiationPrompt(input: NegotiationPromptInput): PromptPair {
+  const systemInstruction = [
+    BASE_RULES,
+    `Write every heading, proposed, reason, subject and message in ${LANGUAGES[input.language].englishName}, but copy every "current" field verbatim from the clause text in its own language.`,
+    roleLine(input.kind, input.role),
+    'Draft a request from the reader to the other party asking for fairer wording of the clauses given. It is a request, not a demand.',
+    TONE_RULES[input.tone],
+    'For each clause, propose balanced, lawful wording a reasonable other party could accept, with a one-line reason in plain words.',
+    'Never threaten, never mention police, courts or legal action, never cite laws, sections or cases, and never tell the reader whether to sign.',
+    'In every ask, "current" must be copied exactly from one clause given (one or two sentences are enough).',
+    CHANNEL_RULES[input.channel],
+  ].join('\n');
+  const clauses = negotiableClauses(input.clauses)
+    .map((clause) => `[${clause.risk} risk] ${clause.heading}: ${clause.quote}`)
+    .join('\n\n');
+  const concerns = input.flags.map((flag) => `${flag.title}. ${flag.suggestion}`).join('\n');
+  const prompt = [
+    `The reader is reviewing a ${KIND_PROFILES[input.kind].label}. Draft the request for these clauses:`,
+    wrapUntrusted('CLAUSES', clauses, input.nonce),
+    concerns === '' ? '' : `Concerns found by the app's rule checks:\n${wrapUntrusted('CONCERNS', concerns, input.nonce)}`,
+  ]
+    .filter((part) => part !== '')
+    .join('\n');
+  return { systemInstruction, prompt };
 }

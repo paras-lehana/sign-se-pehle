@@ -7,7 +7,9 @@
  */
 import {
   type Analysis,
+  type DocumentKind,
   type Provenance,
+  type UserRole,
   analyzeOffline,
   assembleAnalysis,
 } from '@sign-se-pehle/core';
@@ -42,18 +44,36 @@ export const OFFLINE_PROVENANCE: Provenance = {
   steps: [],
 };
 
-/** Builds the report the server would return for {@link RENT_AGREEMENT} in offline mode. */
-export function buildRentalAnalysis(): Analysis {
-  const output = analyzeOffline({ text: RENT_AGREEMENT, kindHint: 'rental', language: 'en' });
+/** App terms with one-sided clauses — a kind that has no what-if scenarios. */
+export const APP_TERMS = [
+  'TERMS OF SERVICE',
+  '',
+  '1. CHANGES. We may change these terms at any time without notice to you.',
+  '',
+  '2. DATA. We may share your personal data with our partners for marketing.',
+  '',
+  '3. LIABILITY. We are not liable for any loss, however caused, even if we were negligent.',
+  '',
+  '4. DISPUTES. Any dispute shall be decided by a sole arbitrator appointed by us, seated in Mumbai.',
+].join('\n');
+
+/** Builds the report the server would return for `text` in offline mode. */
+export function buildAnalysis(text: string, kind: DocumentKind, role: UserRole): Analysis {
+  const output = analyzeOffline({ text, kindHint: kind, language: 'en' });
   return assembleAnalysis({
-    id: 'fixture-rental',
+    id: `fixture-${kind}`,
     output,
-    text: RENT_AGREEMENT,
+    text,
     source: 'text',
     redactions: [],
-    role: 'tenant',
-    kindHint: 'rental',
+    role,
+    kindHint: kind,
     language: 'en',
     provenance: OFFLINE_PROVENANCE,
   });
+}
+
+/** Builds the report the server would return for {@link RENT_AGREEMENT} in offline mode. */
+export function buildRentalAnalysis(): Analysis {
+  return buildAnalysis(RENT_AGREEMENT, 'rental', 'tenant');
 }

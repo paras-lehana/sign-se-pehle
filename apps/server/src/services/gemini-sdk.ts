@@ -2,11 +2,13 @@
  * Gemini SDK adapter — the only file that imports `@google/genai`.
  *
  * Responsibility: translate one {@link ModelCall} into `models.generateContent`
- * with structured output and minimal thinking. Boundary: no retries, timeouts or
- * parsing here — genai-client.ts owns those so they are testable without the SDK.
+ * with structured output and minimal thinking, and one {@link SpeechCall} into a
+ * text-to-speech request. Boundary: no retries, timeouts or parsing here —
+ * genai-client.ts and speech-client.ts own those so they are testable without the SDK.
  */
 import { GoogleGenAI, type Part, type ThinkingConfig, ThinkingLevel } from '@google/genai';
 import type { ModelCaller } from './genai-client.js';
+import type { SpeechCall, SpeechCaller } from './speech-client.js';
 
 /**
  * Low temperature: explanations should be faithful to the document, not creative.
@@ -60,5 +62,34 @@ export function createGeminiCaller(apiKey: string): ModelCaller {
       },
     });
     return response.text;
+  };
+}
+
+/** "Kore", one of Gemini's prebuilt voices: firm and clear, which suits reading explanations. */
+const SPEECH_VOICE = 'Kore';
+
+/**
+ * Creates a {@link SpeechCaller} backed by Gemini text-to-speech. Uses the same key as the
+ * text client; the SDK picks Vertex AI when GOOGLE_GENAI_USE_VERTEXAI is set.
+ * @example
+ * const speak = createGeminiSpeechCaller(config.geminiApiKey);
+ */
+export function createGeminiSpeechCaller(apiKey: string): SpeechCaller {
+  const ai = new GoogleGenAI({ apiKey });
+  return async (call: SpeechCall) => {
+    const response = await ai.models.generateContent({
+      model: call.model,
+      contents: [{ role: 'user', parts: [{ text: call.text }] }],
+      // TTS models reject system instructions, thinking and JSON options, so only audio settings
+      // are sent; abortSignal is a client-side option and never leaves the process.
+      config: {
+        responseModalities: ['AUDIO'],
+        speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: SPEECH_VOICE } } },
+        abortSignal: call.signal,
+      },
+    });
+    const parts = response.candidates?.[0]?.content?.parts ?? [];
+    const inline = parts.find((part) => part.inlineData?.data !== undefined)?.inlineData;
+    return inline?.data === undefined ? undefined : { dataBase64: inline.data, mimeType: inline.mimeType ?? '' };
   };
 }

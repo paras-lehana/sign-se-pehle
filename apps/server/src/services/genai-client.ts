@@ -80,15 +80,29 @@ type Attempt =
   | { readonly kind: 'ok'; readonly text: string }
   | { readonly kind: 'failed'; readonly timedOut: boolean; readonly retryable: boolean; readonly hint: string };
 
-function statusOf(error: unknown): number | undefined {
+/** HTTP status carried by an SDK error, if any (shared with the speech client). */
+export function statusOf(error: unknown): number | undefined {
   if (typeof error === 'object' && error !== null && 'status' in error) {
     return typeof error.status === 'number' ? error.status : undefined;
   }
   return undefined;
 }
 
+/**
+ * True when another model may succeed. Unknown failures (network resets, no status) count as
+ * transient.
+ */
+export function isRetryableStatus(status: number | undefined): boolean {
+  return status === undefined || RETRYABLE_STATUSES.has(status);
+}
+
+/** Models in failover order: the last one that worked first, then the configured order. */
+export function failoverOrder(models: readonly string[], preferred: string | undefined): string[] {
+  return [...models.filter((model) => model === preferred), ...models.filter((model) => model !== preferred)];
+}
+
 /** Rejects when `signal` aborts — guards against callers that ignore their signal. */
-function rejectOnAbort(signal: AbortSignal): Promise<never> {
+export function rejectOnAbort(signal: AbortSignal): Promise<never> {
   return new Promise((_resolve, reject) => {
     const fail = (): void => reject(new Error('aborted'));
     if (signal.aborted) fail();
@@ -141,9 +155,7 @@ export function createGenAiClient(options: GenAiClientOptions): GenAiClient {
     } catch (error: unknown) {
       if (timeout.aborted) return { kind: 'failed', timedOut: true, retryable: true, hint: 'timeout' };
       const status = statusOf(error);
-      // Unknown failures (network resets) are treated as transient: another model may succeed.
-      const retryable = status === undefined || RETRYABLE_STATUSES.has(status);
-      return { kind: 'failed', timedOut: false, retryable, hint: `status ${status ?? 'none'}` };
+      return { kind: 'failed', timedOut: false, retryable: isRetryableStatus(status), hint: `status ${status ?? 'none'}` };
     }
   };
 
@@ -152,7 +164,7 @@ export function createGenAiClient(options: GenAiClientOptions): GenAiClient {
     jsonSchema: unknown,
     parse: (text: string) => Result<T>,
   ): Promise<Result<Generated<T>>> => {
-    const order = [...models.filter((m) => m === preferred), ...models.filter((m) => m !== preferred)];
+    const order = failoverOrder(models, preferred);
     let timedOut = false;
     let hint = 'no models configured';
     for (const model of order) {

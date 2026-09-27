@@ -1,0 +1,94 @@
+/**
+ * Feature bento grid and its decorative mini visuals.
+ *
+ * Responsibility: a 4-column bento on desktop (one 2×2 hero tile, wide and small tiles),
+ * two columns on tablets, one on phones; each tile tinted by a soft corner glow.
+ * Boundary: tile markup is FeatureTile / TileVisual; chips reuse report.css.
+ */
+.bento-section {
+  margin-block: var(--space-8);
+}
+
+.bento {
+  display: grid;
+  gap: var(--space-4);
+}
+
+@media (min-width: 40rem) {
+  .bento {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .bento__tile--large,
+  .bento__tile--wide {
+    grid-column: span 2;
+  }
+}
+
+@media (min-width: 64rem) {
+  .bento {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .bento__tile--large {
+    grid-row: span 2;
+  }
+
+  .bento__tile--small {
+    grid-column: span 1;
+  }
+}
+
+.bento__tile {
+  --tile-glow: var(--mesh-1);
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background:
+    radial-gradient(circle at 100% 0%, var(--tile-glow), transparent 55%),
+    var(--color-glass);
+  box-shadow: var(--shadow-1);
+}
+
+.bento__tile--rose {
+  --tile-glow: var(--glow-rose);
+}
+
+.bento__tile--saffron {
+  --tile-glow: var(--mesh-3);
+}
+
+.bento__tile--violet {
+  --tile-glow: var(--mesh-2);
+}
+
+.bento__tile--cyan {
+  --tile-glow: var(--glow-cyan);
+}
+
+.bento__tile--emerald {
+  --tile-glow: var(--glow-emerald);
+}
+
+.bento__visual {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  min-height: 7.5rem;
+  margin-bottom: var(--space-4);
+}
+
+.bento__title {
+  margin-bottom: var(--space-2);
+  font-size: var(--text-xl);
+}
+
+.bento__body {
+  margin: 0;
+  color: var(--color-text-muted);
+}

@@ -9,7 +9,9 @@ import type { ReactElement } from 'react';
 export function DisclaimerBanner(): ReactElement {
   return (
     <aside className="disclaimer-banner" aria-label="Disclaimer">
-      <span aria-hidden="true">{'⚖'}</span>
+      <span className="disclaimer-banner__icon" aria-hidden="true">
+        {'⚖'}
+      </span>
       <p>
         <strong>Information, not legal advice.</strong> Sign Se Pehle helps you understand a
         document. For decisions that matter, consider asking a lawyer or a free legal aid clinic.

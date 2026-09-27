@@ -41,6 +41,15 @@ export const MAX_CHAT_HISTORY_TURNS = 6;
 /** Text sent for read-aloud; ~1,500 characters is about 90 seconds of speech. */
 export const MAX_SPEECH_CHARS = 1_500;
 
+/** A change request with more than eight asks reads as a rejection rather than a negotiation. */
+export const MAX_NEGOTIATION_ASKS = 8;
+
+/** About two phone screens of chat text; longer chat messages get skimmed, so WhatsApp drafts stay within it. */
+export const MAX_WHATSAPP_MESSAGE_CHARS = 900;
+
+/** An email request with a greeting, up to eight asks and a sign-off fits well within 4,000 characters. */
+export const MAX_NEGOTIATION_MESSAGE_CHARS = 4_000;
+
 /** Glossary lookups are a word or short phrase. */
 export const MAX_TERM_CHARS = 60;
 

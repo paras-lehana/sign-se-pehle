@@ -1,0 +1,179 @@
+/**
+ * Report panels: summary, top flags, key-dates timeline, obligations, checklist and lawyer
+ * questions.
+ *
+ * Responsibility: the secondary blocks inside report tabs. Boundary: cards, chips and the
+ * clause accordion live in report-cards.css; Ask and What-if in report-ask.css; tables in
+ * content.css.
+ */
+.summary__one-line {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 500;
+  line-height: var(--leading-snug);
+}
+
+.summary__listen {
+  margin-bottom: var(--space-4);
+}
+
+.summary__points {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-4);
+  padding-left: var(--space-5);
+}
+
+.summary__points li::marker {
+  color: var(--color-accent);
+}
+
+.summary__reasons {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-glass-strong);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.top-flags {
+  margin-bottom: var(--space-4);
+}
+
+.top-flag {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  padding: var(--space-3) var(--space-4) var(--space-3) var(--space-5);
+}
+
+.top-flag__title {
+  flex: 1;
+  min-width: 12rem;
+  margin: 0;
+  font-weight: 650;
+}
+
+/* Timeline: a glowing rail with a dot per date; dated items get a solid saffron dot. */
+.timeline {
+  position: relative;
+  display: grid;
+  gap: var(--space-4);
+  padding-left: var(--space-6);
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  top: var(--space-2);
+  bottom: var(--space-2);
+  left: 0.6rem;
+  width: 2px;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(var(--color-accent), var(--color-primary));
+  opacity: 0.6;
+}
+
+.timeline__item {
+  position: relative;
+}
+
+.timeline__dot {
+  position: absolute;
+  top: 0.35rem;
+  left: calc(-1 * var(--space-6) + 0.2rem);
+  width: 0.9rem;
+  height: 0.9rem;
+  border: 2px solid var(--color-primary);
+  border-radius: 50%;
+  background: var(--color-bg);
+}
+
+.timeline__item--dated .timeline__dot {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  box-shadow: 0 0 12px var(--color-accent-line);
+}
+
+.timeline__label {
+  margin: 0;
+  font-weight: 700;
+}
+
+.timeline__text {
+  margin: 0 0 var(--space-2);
+  color: var(--color-text-muted);
+}
+
+.obligations {
+  display: grid;
+  gap: var(--space-4);
+}
+
+@media (min-width: 48rem) {
+  .obligations {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.obligations__column {
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-top: 3px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  background: var(--color-glass);
+}
+
+.obligations__column--theirs {
+  border-top-color: var(--color-accent);
+}
+
+.obligations__column ul {
+  margin: 0;
+  padding-left: var(--space-5);
+}
+
+.checklist {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.checklist__item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  min-height: var(--touch-target);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.checklist__item:hover {
+  background: var(--color-glass);
+}
+
+.checklist__item:has(input:checked) span {
+  color: var(--color-text-muted);
+  text-decoration: line-through;
+}
+
+.question-list {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-4);
+  padding-left: var(--space-5);
+}
+
+.question-list li::marker {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.issue {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}

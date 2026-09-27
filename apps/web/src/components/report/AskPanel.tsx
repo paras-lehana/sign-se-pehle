@@ -1,13 +1,15 @@
 /**
- * Ask a question about this document; answers cite verified quotes.
+ * Ask a question about this document — typed or spoken; answers cite verified quotes.
  *
  * Responsibility: grounded Q&A over the analysed (redacted) text with follow-up chips.
  * Boundary: the server decides answerType; this panel explains each type in plain
- * words and only shows quotes the server verified against the document.
+ * words and only shows quotes the server verified against the document. A spoken
+ * question only fills the input — the reader still chooses Ask.
  */
 import { type FormEvent, type ReactElement, useState } from 'react';
 import { MAX_CHAT_HISTORY_TURNS, MAX_QUESTION_CHARS } from '@sign-se-pehle/core';
 import { type Analysis, type AskResponse, askQuestion } from '../../lib/api';
+import { VoiceQuestionButton } from '../features/listen/VoiceQuestionButton';
 import { AskAnswer } from './AskAnswer';
 import { ReportSection } from './ReportSection';
 
@@ -74,6 +76,7 @@ export function AskPanel({ analysis }: AskPanelProps): ReactElement {
             <AskAnswer
               key={`${index}-${turn.question}`}
               turn={turn}
+              language={analysis.language}
               onFollowUp={(followUp) => void ask(followUp)}
             />
           ))}
@@ -90,9 +93,10 @@ export function AskPanel({ analysis }: AskPanelProps): ReactElement {
             placeholder="For example: Can the landlord keep my deposit?"
             onChange={(event) => setQuestion(event.target.value)}
           />
+          <VoiceQuestionButton language={analysis.language} onText={setQuestion} />
           <button
             type="submit"
-            className="button button--primary"
+            className="button button--cta"
             aria-disabled={busy}
             aria-busy={busy}
           >

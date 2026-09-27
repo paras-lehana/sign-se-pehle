@@ -1,0 +1,124 @@
+/**
+ * Glossary terms and their meaning popovers.
+ *
+ * Responsibility: mark tappable terms with a dotted saffron underline and show meanings
+ * as a small card. Boundary: tokens only. On narrow screens the card is a block under the
+ * line (it can never overflow the viewport); from 48rem it floats below the term.
+ */
+.glossary-term__button {
+  position: relative;
+  display: inline;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 3px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline dotted var(--color-accent);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.22em;
+  cursor: help;
+}
+
+/* Grows the tap area to the 44 px target without changing the line height. */
+.glossary-term__button::after {
+  content: '';
+  position: absolute;
+  inset: calc((var(--touch-target) - 1.5em) / -2) 0;
+}
+
+.glossary-term__button:hover,
+.glossary-term__button[aria-expanded='true'] {
+  background: var(--color-accent-soft);
+}
+
+.glossary-term__popover {
+  display: block;
+  max-width: 26rem;
+  margin: var(--space-2) 0;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-accent-line);
+  border-radius: var(--radius-md);
+  background: var(--color-glass-solid);
+  box-shadow: var(--shadow-2);
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  font-style: normal;
+  font-weight: 400;
+  line-height: var(--leading-body);
+  text-align: start;
+  white-space: normal;
+}
+
+.glossary-term__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.glossary-term__name {
+  color: var(--color-accent);
+}
+
+.glossary-term__close {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  min-width: var(--touch-target);
+  min-height: var(--touch-target);
+  margin: calc(var(--space-3) * -1) calc(var(--space-3) * -1) calc(var(--space-2) * -1) 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--color-text-muted);
+  font: inherit;
+  font-size: var(--text-lg);
+  cursor: pointer;
+}
+
+.glossary-term__close:hover {
+  background: var(--color-glass-strong);
+  color: var(--color-text);
+}
+
+.glossary-term__meaning {
+  display: block;
+}
+
+.glossary-term__note {
+  display: block;
+  margin-top: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+}
+
+@media (min-width: 48rem) {
+  .glossary-term {
+    position: relative;
+  }
+
+  .glossary-term__popover {
+    position: absolute;
+    z-index: 30;
+    top: calc(100% + var(--space-2));
+    inset-inline-start: 0;
+    width: max-content;
+    max-width: min(24rem, 70vw);
+    margin: 0;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .glossary-term__popover {
+    animation: glossary-pop var(--duration-fast) var(--ease-out);
+  }
+}
+
+@keyframes glossary-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}

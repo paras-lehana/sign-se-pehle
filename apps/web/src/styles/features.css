@@ -1,0 +1,17 @@
+/**
+ * Feature panel styles — index.
+ *
+ * Responsibility: the one stylesheet main.tsx imports for components/features/**. Each
+ * feature keeps its CSS next to its components so a panel and its styles change together.
+ * Boundary: layout and feature specifics only; every colour, size and motion value comes
+ * from tokens.css, so the panels follow the theme (dark "Midnight glass" or light paper).
+ */
+@import '../components/features/common/common.css';
+@import '../components/features/samples/samples.css';
+@import '../components/features/camera/camera.css';
+@import '../components/features/listen/listen.css';
+@import '../components/features/glossary/glossary.css';
+@import '../components/features/xray/xray.css';
+@import '../components/features/negotiate/negotiate.css';
+@import '../components/features/next-steps/next-steps.css';
+@import '../components/features/brief/brief.css';

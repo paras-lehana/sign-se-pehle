@@ -1,5 +1,5 @@
 /**
- * Multi-step progress indicator shown while an analysis runs.
+ * Multi-step progress indicator shown while an analysis runs, drawn as a glowing pipeline.
  *
  * Responsibility: tell the reader what the pipeline is doing during a request that
  * takes a few seconds. Boundary: the steps advance on a timer because the API
@@ -28,7 +28,7 @@ export function ProgressSteps(): ReactElement {
   }, []);
 
   return (
-    <div className="progress card" role="status" aria-live="polite">
+    <div className="progress glass glass--blur" role="status" aria-live="polite">
       <p className="progress__title">
         Working on it — step {active + 1} of {ANALYSIS_STEPS.length}
       </p>

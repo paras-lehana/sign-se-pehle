@@ -1,11 +1,12 @@
 /**
- * One question-and-answer turn with cited quotes and follow-up chips.
+ * One question-and-answer turn with cited quotes, Listen and follow-up chips.
  *
  * Responsibility: render an answer and explain its answerType in plain words.
  * Boundary: display only; asking a follow-up is delegated to the parent panel.
  */
 import type { ReactElement } from 'react';
-import type { AskAnswerType } from '@sign-se-pehle/core';
+import type { AskAnswerType, LanguageCode } from '@sign-se-pehle/core';
+import { ListenButton } from '../features/listen/ListenButton';
 import type { AskTurn } from './AskPanel';
 
 /** Extra context per answer type, exported so tests assert the same copy. */
@@ -18,10 +19,11 @@ export const ANSWER_TYPE_NOTES: Readonly<Record<AskAnswerType, string | null>> =
 
 interface AskAnswerProps {
   readonly turn: AskTurn;
+  readonly language: LanguageCode;
   readonly onFollowUp: (question: string) => void;
 }
 
-export function AskAnswer({ turn, onFollowUp }: AskAnswerProps): ReactElement {
+export function AskAnswer({ turn, language, onFollowUp }: AskAnswerProps): ReactElement {
   const { response } = turn;
   const note = ANSWER_TYPE_NOTES[response.answerType];
   return (
@@ -41,6 +43,7 @@ export function AskAnswer({ turn, onFollowUp }: AskAnswerProps): ReactElement {
             </figcaption>
           </figure>
         ))}
+        <ListenButton text={response.answer} language={language} label="Listen to this answer" />
       </div>
       {response.followUps.length > 0 ? (
         <ul className="plain-list chips" role="list" aria-label="Suggested follow-up questions">

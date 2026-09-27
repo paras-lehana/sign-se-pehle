@@ -1,0 +1,243 @@
+/**
+ * The bento tiles' decorative mini visuals: page, flag cards, rupee figure, chat bubbles,
+ * voice waveform and help pills.
+ *
+ * Responsibility: small, recognisable previews built from the report's own vocabulary.
+ * Boundary: decorative only (aria-hidden in markup); the waveform is the one loop and it
+ * obeys the motion policy.
+ */
+/* X-ray: a mini page with two lit lines. */
+.tv-xray {
+  position: relative;
+  display: grid;
+  gap: 0.85rem;
+  width: 100%;
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--art-paper);
+}
+
+.tv-xray__line {
+  height: 0.6rem;
+  border-radius: var(--radius-pill);
+  background: var(--art-ink);
+}
+
+.tv-xray__line.w90 { width: 90%; }
+.tv-xray__line.w85 { width: 85%; }
+.tv-xray__line.w80 { width: 80%; }
+.tv-xray__line.w75 { width: 75%; }
+.tv-xray__line.w70 { width: 70%; }
+.tv-xray__line.w60 { width: 60%; }
+.tv-xray__line.w50 { width: 50%; }
+
+.tv-xray__line.high {
+  background: var(--color-high-edge);
+  box-shadow: 0 0 16px var(--color-high-edge);
+}
+
+.tv-xray__line.medium {
+  background: var(--color-medium-edge);
+  box-shadow: 0 0 16px var(--color-medium-edge);
+}
+
+.tv-xray__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+/* Red flags: two stacked mini flag cards. */
+.tv-flags {
+  display: grid;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.tv-flags__card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-left: 4px solid var(--color-high-edge);
+  border-radius: var(--radius-md);
+  background: var(--color-glass);
+  font-size: var(--text-sm);
+}
+
+.tv-flags__card--medium {
+  border-left-color: var(--color-medium-edge);
+  margin-left: var(--space-5);
+}
+
+.tv-flags__title {
+  font-weight: 650;
+}
+
+.tv-flags__law {
+  flex-basis: 100%;
+  color: var(--color-link);
+  font-size: var(--text-xs);
+}
+
+/* What-if: a big rupee figure over a two-part bar. */
+.tv-money {
+  display: grid;
+  gap: var(--space-1);
+  width: 100%;
+}
+
+.tv-money__figure {
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);
+  font-weight: 600;
+  line-height: 1;
+}
+
+.tv-money__caption {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.tv-money__bar {
+  display: flex;
+  gap: 3px;
+  height: 0.5rem;
+  margin-top: var(--space-2);
+}
+
+.tv-money__segment {
+  border-radius: var(--radius-pill);
+}
+
+.tv-money__segment--rent {
+  flex: 7;
+  background: var(--color-accent);
+}
+
+.tv-money__segment--deposit {
+  flex: 3;
+  background: var(--color-primary);
+}
+
+/* The X-ray tile's floating explanation, pinned beside the high-risk line. */
+.tv-xray__tip {
+  position: absolute;
+  right: var(--space-4);
+  top: 38%;
+  max-width: 15rem;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-high-edge);
+  border-radius: var(--radius-md);
+  background: var(--color-glass-solid);
+  box-shadow: var(--shadow-2);
+  font-size: var(--text-sm);
+}
+
+.tv-xray__tip strong {
+  display: block;
+  color: var(--color-high);
+}
+
+/* Negotiate: a request and a friendly reply. */
+.tv-chat {
+  display: grid;
+  gap: var(--space-2);
+  width: 100%;
+  font-size: var(--text-sm);
+}
+
+.tv-chat__bubble {
+  justify-self: start;
+  max-width: 92%;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-lg) var(--radius-lg) var(--radius-lg) var(--radius-sm);
+  background: var(--color-primary-soft);
+  border: 1px solid var(--color-primary-line);
+}
+
+.tv-chat__bubble--reply {
+  justify-self: end;
+  border-radius: var(--radius-lg) var(--radius-lg) var(--radius-sm) var(--radius-lg);
+  background: var(--color-low-soft);
+  border-color: transparent;
+  color: var(--color-low);
+  font-weight: 600;
+}
+
+/* Listen: a breathing waveform over the ten Indic endonyms. */
+.tv-listen {
+  display: grid;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.tv-listen__wave {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 3.5rem;
+}
+
+.tv-listen__bar {
+  width: 5px;
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(to top, var(--color-primary), var(--color-accent));
+  transform: scaleY(0.45);
+  animation: wave 1.6s var(--ease-in-out) infinite alternate;
+}
+
+.tv-listen__bar:nth-child(3n) {
+  transform: scaleY(0.8);
+  animation-delay: -0.4s;
+}
+
+.tv-listen__bar:nth-child(3n + 1) {
+  transform: scaleY(0.3);
+  animation-delay: -0.9s;
+}
+
+.tv-listen__bar:nth-child(4n) {
+  transform: scaleY(0.62);
+  animation-delay: -1.2s;
+}
+
+@keyframes wave {
+  from {
+    transform: scaleY(0.2);
+  }
+
+  to {
+    transform: scaleY(1);
+  }
+}
+
+.tv-listen__langs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+/* Next steps: three help pills. */
+.tv-next {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.tv-next__pill {
+  padding-block: var(--space-2);
+}
+
+.tv-next__pill--accent {
+  border-color: var(--color-accent-line);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+}

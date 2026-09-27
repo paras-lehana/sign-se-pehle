@@ -127,6 +127,16 @@ function fuzzySpan(source: string, quote: string): TextSpan | null {
 }
 
 /**
+ * Normalises a model-supplied quote for matching: drops wrapping quote marks and a trailing
+ * ellipsis (neither is in the source), then applies {@link normalizeForMatch}.
+ * @example
+ * normalizeQuote('“The Tenant shall pay…”'); // 'the tenant shall pay'
+ */
+export function normalizeQuote(quote: string): string {
+  return normalizeForMatch(normalizeForMatch(quote).replace(QUOTE_WRAPPER, ''));
+}
+
+/**
  * Finds a quote in the source and returns offsets into the original text, or null.
  * Tries an exact normalised match first, then a word-window match (≥ 85% of words).
  * @example

@@ -30,6 +30,11 @@ const MAX_OBLIGATIONS = 6;
 const MAX_OBLIGATION_CHARS = 240;
 const MAX_LAWYER_QUESTIONS = 5;
 const MAX_LINE_CHARS = 600;
+/** A notice is answered rather than signed, so its closing lawyer question differs. */
+const CLOSING_QUESTION: Readonly<Record<'notice' | 'agreement', string>> = {
+  notice: 'Is the claim in this notice valid, and what should a written reply cover before the deadline?',
+  agreement: 'Which terms in this document are most worth negotiating before signing?',
+};
 const MONTH_NAMES = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
 
 function toClause(segment: { heading: string; quote: string }): ModelClause {
@@ -86,6 +91,13 @@ export function findKeyDates(text: string): ModelKeyDate[] {
   }));
 }
 
+/** A notice's date line comes before any date it refers to, so its first valid date is the notice date. */
+function withNoticeDate(facts: DocumentFacts, kind: DocumentKind, dates: readonly ModelKeyDate[]): DocumentFacts {
+  const first = dates.find((date) => date.isoDate !== undefined)?.isoDate;
+  if (kind !== 'legal-notice' || first === undefined || facts.noticeDate !== undefined) return facts;
+  return { ...facts, noticeDate: first };
+}
+
 function obligations(text: string, kind: DocumentKind): { yours: string[]; theirs: string[] } {
   const parties = OBLIGATION_PARTIES[kind];
   const yours: string[] = [];
@@ -113,7 +125,8 @@ export function analyzeOffline(input: OfflineAnalysisInput): AnalysisModelOutput
   const kind = input.kindHint ?? classifyKind(input.text);
   const label = KIND_PROFILES[kind].label;
   const clauses = segmentClauses(input.text).map(toClause);
-  const facts = extractFacts(input.text, kind);
+  const keyDates = findKeyDates(input.text);
+  const facts = withNoticeDate(extractFacts(input.text, kind), kind, keyDates);
   const risky = clauses.filter((clause) => clause.risk !== 'low');
   const languageNote = input.language === 'en' ? '' : ' Explanations in your chosen language need the Gemini engine.';
   const lawyerQuestions = [
@@ -121,7 +134,7 @@ export function analyzeOffline(input: OfflineAnalysisInput): AnalysisModelOutput
       .filter((clause) => clause.risk === 'high')
       .slice(0, MAX_LAWYER_QUESTIONS)
       .map((clause) => clipText(`Is the "${clause.heading}" clause enforceable as written, and can it be negotiated?`, MAX_LINE_CHARS)),
-    'Which terms in this document are most worth negotiating before signing?',
+    CLOSING_QUESTION[kind === 'legal-notice' ? 'notice' : 'agreement'],
   ];
   return {
     kind,
@@ -132,7 +145,7 @@ export function analyzeOffline(input: OfflineAnalysisInput): AnalysisModelOutput
     },
     clauses,
     facts,
-    keyDates: findKeyDates(input.text),
+    keyDates,
     obligations: obligations(input.text, kind),
     inconsistencies: [],
     checklist: checklistFor(kind),

@@ -24,9 +24,9 @@ const LEGAL_AID = [
     href: 'https://consumerhelpline.gov.in/',
   },
   {
-    name: 'e-Daakhil',
+    name: 'e-Jagriti',
     detail: 'File a consumer complaint online with the consumer commission.',
-    href: 'https://edaakhil.nic.in/',
+    href: 'https://e-jagriti.gov.in/',
   },
 ] as const;
 

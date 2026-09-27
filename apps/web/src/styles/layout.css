@@ -1,0 +1,225 @@
+/**
+ * App shell: sticky glass header, scroll-progress bar, main column, disclaimer and footer.
+ *
+ * Responsibility: the chrome every page shares. Boundary: page content styles live in
+ * home, workspace, report and content CSS. The header solidifies and the progress bar
+ * fills with CSS scroll-driven animations — no scroll listeners; unsupported browsers
+ * keep a solid header and simply show no bar.
+ */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--color-glass-header);
+  border-bottom: 1px solid var(--color-border);
+  backdrop-filter: var(--blur-glass);
+}
+
+.site-header__inner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  max-width: var(--content-width);
+  min-height: var(--header-height);
+  margin: 0 auto;
+  padding-inline: var(--space-3);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--touch-target);
+  margin-right: auto;
+  color: var(--color-text);
+  text-decoration: none;
+  border-radius: var(--radius-md);
+}
+
+.brand__mark {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  filter: drop-shadow(var(--brand-glow));
+}
+
+.brand__stop-1 {
+  stop-color: var(--brand-stop-1);
+}
+
+.brand__stop-2 {
+  stop-color: var(--brand-stop-2);
+}
+
+.brand__mark-page {
+  fill: var(--brand-page);
+}
+
+.brand__mark-line,
+.brand__mark-check {
+  fill: none;
+  stroke: var(--brand-ink);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.brand__mark-seal {
+  fill: var(--brand-check);
+}
+
+.brand__text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.brand__name {
+  font-family: var(--font-display);
+  font-size: 1.1875rem;
+  font-weight: 620;
+  letter-spacing: -0.01em;
+}
+
+.brand__tagline {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+}
+
+.site-nav ul {
+  display: flex;
+  gap: var(--space-1);
+  margin: 0;
+  padding: var(--space-1);
+  list-style: none;
+  background: var(--color-glass);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+}
+
+.site-nav a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--touch-target);
+  min-height: calc(var(--touch-target) - 2px);
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-pill);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    color var(--duration-fast) ease,
+    background-color var(--duration-fast) ease;
+}
+
+.site-nav a:hover {
+  color: var(--color-text);
+}
+
+.site-nav a[aria-current='page'] {
+  background: var(--color-primary-soft);
+  color: var(--color-text);
+  box-shadow: inset 0 0 0 1px var(--color-primary-line);
+}
+
+.site-header__actions {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.icon-button {
+  display: inline-grid;
+  place-items: center;
+  width: var(--touch-target);
+  height: var(--touch-target);
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-glass);
+  color: var(--color-text);
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) ease,
+    border-color var(--duration-fast) ease;
+}
+
+.icon-button:hover {
+  background: var(--color-glass-strong);
+  border-color: var(--color-border-strong);
+}
+
+.icon-button svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Phones: the wordmark becomes screen-reader text so nav and toggles fit in one row. */
+@media (max-width: 39.99rem) {
+  .brand__text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .site-nav a {
+    padding: 0 var(--space-2);
+  }
+}
+
+@media (min-width: 64rem) {
+  .site-header__inner {
+    gap: var(--space-4);
+    padding-inline: var(--space-5);
+  }
+}
+
+.scroll-progress {
+  display: none;
+}
+
+@supports (animation-timeline: scroll()) {
+  .site-header {
+    animation: header-solidify linear both;
+    animation-timeline: scroll(root);
+    animation-range: 0 120px;
+  }
+
+  .scroll-progress {
+    display: block;
+    position: absolute;
+    inset: auto 0 -1px;
+    height: 2px;
+    background: var(--gradient-line);
+    transform-origin: 0 50%;
+    animation: scroll-progress linear both;
+    animation-timeline: scroll(root);
+  }
+}
+
+@keyframes header-solidify {
+  from {
+    background: transparent;
+    border-bottom-color: transparent;
+  }
+}
+
+@keyframes scroll-progress {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}

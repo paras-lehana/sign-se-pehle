@@ -10,7 +10,7 @@ import { z } from 'zod';
 import { CLAUSE_CATEGORIES, CLAUSE_SIGNALS, FAVOURS, RISK_LEVELS } from '../domain/clauses.js';
 import { DOCUMENT_KINDS } from '../domain/document-kinds.js';
 import { documentFactsSchema } from '../schemas/facts.js';
-import { MAX_CLAUSES } from '../schemas/limits.js';
+import { MAX_CLAUSES, MAX_NEGOTIATION_ASKS, MAX_NEGOTIATION_MESSAGE_CHARS } from '../schemas/limits.js';
 
 const text = (max: number) => z.string().trim().min(1).max(max);
 const lines = (max: number, maxItems: number) => z.array(text(max)).max(maxItems);
@@ -81,6 +81,24 @@ export const compareModelOutputSchema = z.object({
 });
 
 export type CompareModelOutput = z.infer<typeof compareModelOutputSchema>;
+
+/** A drafted change request; `current` is matched back to a clause quote before it is shown. */
+export const negotiationModelOutputSchema = z.object({
+  subject: text(160).optional(),
+  message: text(MAX_NEGOTIATION_MESSAGE_CHARS),
+  asks: z
+    .array(
+      z.object({
+        heading: text(120),
+        current: text(1_200),
+        proposed: text(1_200),
+        reason: text(600),
+      }),
+    )
+    .max(MAX_NEGOTIATION_ASKS),
+});
+
+export type NegotiationModelOutput = z.infer<typeof negotiationModelOutputSchema>;
 
 /** Keys Gemini's response-schema dialect rejects or ignores. */
 const GEMINI_UNSUPPORTED_KEYS: ReadonlySet<string> = new Set(['$schema', 'additionalProperties']);

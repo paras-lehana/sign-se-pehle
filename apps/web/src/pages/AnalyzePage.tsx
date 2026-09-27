@@ -1,5 +1,6 @@
 /**
- * Analyze page: the form, the progress state and the report on one screen.
+ * Home page: hero, document-type marquee, the workspace (form, progress, report) and the
+ * feature bento.
  *
  * Responsibility: own the analyze request lifecycle (idle, loading, error, done) and
  * announce each outcome to assistive technology. Boundary: rendering the report is
@@ -9,7 +10,10 @@ import { type ReactElement, useState } from 'react';
 import type { AnalyzeRequest } from '@sign-se-pehle/core';
 import { AnalyzeForm } from '../components/analyze/AnalyzeForm';
 import { ProgressSteps } from '../components/analyze/ProgressSteps';
-import { Report } from '../components/report/Report';
+import { DocTypeMarquee } from '../components/home/DocTypeMarquee';
+import { FeatureBento } from '../components/home/FeatureBento';
+import { Hero } from '../components/home/Hero';
+import { ReportWorkspace } from '../components/report/ReportWorkspace';
 import { type Analysis, type ApiError, analyzeDocument } from '../lib/api';
 import { usePageTitle } from '../lib/use-page-title';
 
@@ -42,28 +46,37 @@ export function AnalyzePage(): ReactElement {
 
   return (
     <>
-      <h1>Understand every clause before you sign</h1>
-      <p className="lede">
-        Paste or upload a rent agreement, job offer, loan, insurance policy or app terms. Get a
-        plain-language explanation in your language, red flags linked to official Indian law, and
-        questions to ask before you sign.
-      </p>
-      <AnalyzeForm
-        busy={state.status === 'loading'}
-        onSubmit={(payload) => void handleSubmit(payload)}
-      />
-      <p className="visually-hidden" aria-live="polite">
-        {ANNOUNCEMENT[state.status]}
-      </p>
-      {state.status === 'loading' ? <ProgressSteps /> : null}
-      {state.status === 'error' ? (
-        <div className="notice notice--error" role="alert">
-          <p>
-            <strong>Something went wrong.</strong> {state.error.message}
+      <Hero />
+      <DocTypeMarquee />
+      <section id="workspace" className="workspace" aria-labelledby="workspace-heading">
+        <div className="section-head">
+          <p className="eyebrow">Your workspace</p>
+          <h2 id="workspace-heading">Check a document</h2>
+          <p className="lede">
+            Paste the text, upload a PDF, take a photo or try a sample. Nothing is prefilled and
+            nothing is stored.
           </p>
         </div>
+        <AnalyzeForm
+          busy={state.status === 'loading'}
+          onSubmit={(payload) => void handleSubmit(payload)}
+        />
+        <p className="visually-hidden" aria-live="polite">
+          {ANNOUNCEMENT[state.status]}
+        </p>
+        {state.status === 'loading' ? <ProgressSteps /> : null}
+        {state.status === 'error' ? (
+          <div className="notice notice--error" role="alert">
+            <p>
+              <strong>Something went wrong.</strong> {state.error.message}
+            </p>
+          </div>
+        ) : null}
+      </section>
+      {state.status === 'done' ? (
+        <ReportWorkspace key={state.analysis.id} analysis={state.analysis} />
       ) : null}
-      {state.status === 'done' ? <Report analysis={state.analysis} /> : null}
+      <FeatureBento />
     </>
   );
 }

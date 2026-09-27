@@ -18,6 +18,7 @@ import {
   createGenAiClient,
   createOfflineGenAiClient,
 } from '../services/genai-client.js';
+import { type SpeechClient, createOfflineSpeechClient } from '../services/speech-client.js';
 
 /** A realistic (fictional) Indian rent agreement: deposit is 5x rent, so rules must fire. */
 export const RENTAL_TEXT = [
@@ -81,11 +82,14 @@ export function statusError(status: number): Error & { status: number } {
 
 export const TEST_MODELS = ['model-a', 'model-b', 'model-c'] as const;
 
+export const TEST_TTS_MODELS = ['tts-a', 'tts-b'] as const;
+
 export function makeConfig(overrides: Partial<ServerConfig> = {}): ServerConfig {
   return {
     port: 0,
     geminiApiKey: 'test-key',
     geminiModels: TEST_MODELS,
+    geminiTtsModels: TEST_TTS_MODELS,
     geminiTimeoutMs: 1_000,
     webDistDir: join(tmpdir(), 'sign-se-pehle-no-web-build'),
     nodeEnv: 'test',
@@ -101,15 +105,16 @@ export interface TestApp {
   readonly logger: Logger;
 }
 
-/** Builds the real app with a fake clock, captured logs and the given client. */
+/** Builds the real app with a fake clock, captured logs and the given clients. */
 export function makeApp(
   genai: GenAiClient = createOfflineGenAiClient(),
   overrides: Partial<ServerConfig> = {},
+  speech: SpeechClient = createOfflineSpeechClient(),
 ): TestApp {
   const clock = createFakeClock();
   const logs: string[] = [];
   const logger = createJsonLogger((line) => logs.push(line));
-  const app = buildApp(makeConfig(overrides), { genai, now: clock.now, logger });
+  const app = buildApp(makeConfig(overrides), { genai, speech, now: clock.now, logger });
   return { app, clock, logs, logger };
 }
 

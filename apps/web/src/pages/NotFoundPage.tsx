@@ -5,16 +5,22 @@
  */
 import type { ReactElement } from 'react';
 import { Link } from 'react-router-dom';
+import { PageHero } from '../components/ui/PageHero';
 import { usePageTitle } from '../lib/use-page-title';
 
 export function NotFoundPage(): ReactElement {
   usePageTitle('Page not found');
   return (
-    <section className="card">
-      <h1>Page not found</h1>
-      <p>
-        That page does not exist. <Link to="/">Explain a document</Link> instead.
+    <div className="not-found glass glass--blur">
+      <p className="not-found__code gradient-text" aria-hidden="true">
+        404
       </p>
-    </section>
+      <PageHero eyebrow="Lost the thread" title="Page not found">
+        That page does not exist. Let us get you back to your document.
+      </PageHero>
+      <Link className="button button--cta" to="/">
+        Explain a document
+      </Link>
+    </div>
   );
 }

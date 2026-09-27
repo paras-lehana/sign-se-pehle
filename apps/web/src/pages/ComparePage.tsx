@@ -10,6 +10,7 @@ import { DEFAULT_LANGUAGE, compareRequestSchema } from '@sign-se-pehle/core';
 import { DocumentOptions, type DocumentOptionsValue } from '../components/analyze/DocumentOptions';
 import { CompareResult } from '../components/compare/CompareResult';
 import { DraftField } from '../components/compare/DraftField';
+import { PageHero } from '../components/ui/PageHero';
 import { type CompareResponse, compareDocuments } from '../lib/api';
 import { usePageTitle } from '../lib/use-page-title';
 
@@ -51,18 +52,17 @@ export function ComparePage(): ReactElement {
 
   return (
     <>
-      <h1>Compare two drafts</h1>
-      <p className="lede">
+      <PageHero eyebrow="Compare" title="Compare two drafts">
         Got a revised agreement? Paste the old and new versions to see exactly what changed and who
         each change favours.
-      </p>
+      </PageHero>
       <form
-        className="card"
+        className="card compare-form"
         aria-busy={busy}
         noValidate
         onSubmit={(event) => void handleSubmit(event)}
       >
-        <h2>Your drafts</h2>
+        <h2 className="compare-form__title">Your drafts</h2>
         <div className="compare-grid">
           <DraftField
             id="first-draft"
@@ -90,7 +90,7 @@ export function ComparePage(): ReactElement {
         )}
         <button
           type="submit"
-          className="button button--primary button--large"
+          className="button button--cta button--large"
           aria-disabled={busy}
           aria-busy={busy}
         >

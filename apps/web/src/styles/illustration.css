@@ -1,0 +1,246 @@
+/**
+ * The hero's "document scan" SVG: page, scan beam, risk marks, floating findings, shield.
+ *
+ * Responsibility: colours (from tokens) and CSS keyframes for ScanIllustration. Boundary:
+ * transforms use SVG user units; each element's resting state is the finished scan (beam
+ * mid-page, marks lit, chips in place), which is what reduced motion and the pause
+ * control show. One 6 s cycle: the beam sweeps, marks light as it passes, then it rescans.
+ */
+.hero__art {
+  display: grid;
+  place-items: center;
+  perspective: 1200px;
+}
+
+.scan {
+  width: 100%;
+  max-width: 40rem;
+  height: auto;
+  overflow: visible;
+  transform: rotateY(-8deg) rotateX(4deg);
+  animation: fade-up 1.1s var(--ease-out) 300ms backwards;
+}
+
+@media (min-width: 60rem) {
+  .scan {
+    width: 112%;
+  }
+}
+
+.scan text {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.scan__halo-stop {
+  stop-color: var(--color-primary);
+  stop-opacity: 0.28;
+}
+
+.scan__halo-stop--end {
+  stop-opacity: 0;
+}
+
+.scan__sheet {
+  fill: var(--art-paper);
+  stroke: var(--art-paper-edge);
+  stroke-width: 1.2;
+}
+
+.scan__sheet--back {
+  transform: rotate(7deg);
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0.6;
+}
+
+.scan__title {
+  fill: var(--art-ink-strong);
+}
+
+.scan__ink {
+  fill: var(--art-ink);
+}
+
+.scan__mark rect {
+  fill-opacity: 0.22;
+}
+
+.scan__mark--high rect,
+.scan__mark--high circle {
+  fill: var(--color-high-edge);
+}
+
+.scan__mark--medium rect,
+.scan__mark--medium circle {
+  fill: var(--color-medium-edge);
+}
+
+.scan__mark {
+  animation: mark-light 6s var(--ease-out) infinite backwards;
+}
+
+.scan__mark--1 {
+  animation-delay: 1.6s;
+}
+
+.scan__mark--2 {
+  animation-delay: 2.7s;
+}
+
+.scan__mark--3 {
+  animation-delay: 3.8s;
+}
+
+@keyframes mark-light {
+  0% {
+    opacity: 0.1;
+  }
+
+  8%,
+  100% {
+    opacity: 1;
+  }
+}
+
+.scan__signature {
+  fill: none;
+  stroke: var(--color-primary);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-dasharray: 140;
+  animation: signature-draw 6s var(--ease-in-out) infinite backwards;
+}
+
+@keyframes signature-draw {
+  0%,
+  70% {
+    stroke-dashoffset: 140;
+  }
+
+  90%,
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+.scan__sign-line {
+  stroke: var(--art-ink-strong);
+  stroke-width: 1.2;
+  stroke-dasharray: 4 4;
+}
+
+/* Resting position: mid-page, so the static illustration still reads as "scanning". */
+.scan__beam {
+  transform: translateY(150px);
+  animation: beam-sweep 6s var(--ease-in-out) infinite;
+}
+
+@keyframes beam-sweep {
+  0% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+
+  8% {
+    opacity: 1;
+  }
+
+  80% {
+    opacity: 1;
+  }
+
+  88%,
+  100% {
+    opacity: 0;
+    transform: translateY(300px);
+  }
+}
+
+.scan__trail-stop {
+  stop-color: var(--art-beam);
+  stop-opacity: 0.3;
+}
+
+.scan__trail-stop--end {
+  stop-opacity: 0;
+}
+
+.scan__beam-line {
+  fill: var(--art-beam);
+  filter: drop-shadow(0 0 6px var(--art-beam));
+}
+
+.scan__chip {
+  fill: var(--color-glass-solid);
+  stroke: var(--color-border-strong);
+}
+
+.scan__chip--high {
+  stroke: var(--color-high-edge);
+}
+
+.scan__chip-dot--high {
+  fill: var(--color-high-edge);
+}
+
+.scan__chip-text {
+  fill: var(--color-text);
+}
+
+.scan__chip-text--verified {
+  fill: var(--color-verified);
+}
+
+.scan__float {
+  animation: float 7s var(--ease-in-out) infinite alternate;
+}
+
+.scan__float--2 {
+  animation-delay: -2.3s;
+}
+
+.scan__float--3 {
+  animation-delay: -4.6s;
+}
+
+@keyframes float {
+  from {
+    transform: translateY(-6px);
+  }
+
+  to {
+    transform: translateY(6px);
+  }
+}
+
+.scan__shield-ring {
+  fill: none;
+  stroke: var(--color-primary);
+  stroke-width: 2;
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0.5;
+  animation: shield-ring 3s var(--ease-out) infinite;
+}
+
+@keyframes shield-ring {
+  from {
+    opacity: 0.7;
+    transform: scale(0.8);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(1.35);
+  }
+}
+
+.scan__shield-check {
+  fill: none;
+  stroke: var(--brand-page);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}

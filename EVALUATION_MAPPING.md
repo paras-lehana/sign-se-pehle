@@ -12,6 +12,7 @@ Where each evaluation area is delivered, with a path for every claim.
 - Strict TypeScript 6 (`noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`) → [`tsconfig.base.json`](tsconfig.base.json)
 - Repo-wide ESLint (typescript-eslint strict, jsx-a11y strict, react-hooks), zero warnings, inline suppressions disabled → [`eslint.config.js`](eslint.config.js)
 - Duplication check (jscpd, threshold 0) → `npm run dup-check`
+- Accessible primitives reused by every panel (WAI-ARIA tabs, choice groups, feature panels) → [`components/ui/Tabs.tsx`](apps/web/src/components/ui/Tabs.tsx), [`features/common`](apps/web/src/components/features/common)
 
 ## 2. Security
 
@@ -22,12 +23,17 @@ Where each evaluation area is delivered, with a path for every claim.
 - Rate limiting with a trusted single proxy hop → [`middleware/rate-limit.ts`](apps/server/src/middleware/rate-limit.ts)
 - Secret Manager deployment, non-root container, SHA-pinned CI → [`scripts/deploy.sh`](scripts/deploy.sh), [`Dockerfile`](Dockerfile), [`.github/workflows/ci.yml`](.github/workflows/ci.yml)
 - Threat model → [`SECURITY.md`](SECURITY.md)
+- Negotiation re-redacts clause text and never lets the model cite law; speech text travels only in the POST body, responses are `no-store`, CSP adds only `media-src 'self' blob:` → [`negotiation-service.ts`](apps/server/src/services/negotiation-service.ts), [`routes/speech.ts`](apps/server/src/routes/speech.ts)
+- Legal-aid eligibility runs on the device, so income and category answers are never sent → [`engine/eligibility.ts`](packages/core/src/engine/eligibility.ts)
 
 ## 3. Efficiency
 
 - One Gemini call per analysis, flash-lite first, response cache, concurrency cap → [`services/analysis-service.ts`](apps/server/src/services/analysis-service.ts)
 - Deterministic engine for rules, money and dates (no extra AI calls) → [`packages/core/src/engine`](packages/core/src/engine)
 - Single stateless service, min 1 / max 3 instances → [`cloudbuild.yaml`](cloudbuild.yaml)
+- Route- and tab-level code splitting (Compare, About, Next steps, Negotiate, Brief) → [`App.tsx`](apps/web/src/App.tsx), [`report/lazy-panels.ts`](apps/web/src/components/report/lazy-panels.ts)
+- X-ray, glossary, eligibility and reply deadline computed in the browser from core (zero requests) → [`engine/xray.ts`](packages/core/src/engine/xray.ts), [`knowledge/glossary.ts`](packages/core/src/knowledge/glossary.ts)
+- Self-hosted variable fonts, no third-party requests → [`main.tsx`](apps/web/src/main.tsx)
 - Decisions table → [`ARCHITECTURE.md`](ARCHITECTURE.md#efficiency-decisions)
 
 ## 4. Testing
@@ -35,21 +41,27 @@ Where each evaluation area is delivered, with a path for every claim.
 - Core unit tests, one file per module → [`packages/core/src/**/__tests__`](packages/core/src)
 - Server integration tests (supertest against the real app with a fake Gemini client) → [`apps/server/src/__tests__`](apps/server/src)
 - Web component tests (Testing Library, fixtures derived from core) → [`apps/web/src/__tests__`](apps/web/src)
+- Browser journeys and axe scans of every report tab in both themes, desktop and phone (Playwright) → [`e2e/`](e2e)
 - Details and counts → [`TESTING.md`](TESTING.md)
 
 ## 5. Accessibility
 
 - Semantic structure, skip link, labelled controls, live regions, focus management, AA tokens, reduced motion, dark mode → [`apps/web/src`](apps/web/src), [`styles/tokens.css`](apps/web/src/styles/tokens.css)
 - `eslint-plugin-jsx-a11y` strict in the lint gate → [`eslint.config.js`](eslint.config.js)
+- Keyboard tabs (arrows, Home/End), a pause control for decorative motion (WCAG 2.2.2), glossary popovers that close on Escape, read-aloud and voice input for low-literacy readers → [`ACCESSIBILITY.md`](ACCESSIBILITY.md#decisions-and-evidence)
 - Details → [`ACCESSIBILITY.md`](ACCESSIBILITY.md)
 
 ## 6. Google Services
 
-- Gemini API for OCR, analysis, Q&A and comparison, structured output, failover chain → [`services/genai-client.ts`](apps/server/src/services/genai-client.ts), [`GENAI_ARCHITECTURE.md`](GENAI_ARCHITECTURE.md)
+- Gemini on Vertex AI for OCR, analysis, Q&A, comparison and negotiation drafts, structured output, failover chain → [`services/genai-client.ts`](apps/server/src/services/genai-client.ts), [`GENAI_ARCHITECTURE.md`](GENAI_ARCHITECTURE.md)
+- Gemini text-to-speech reads explanations aloud → [`services/speech-client.ts`](apps/server/src/services/speech-client.ts)
 - Cloud Run, Cloud Build, Artifact Registry, Secret Manager, Cloud Logging → [`cloudbuild.yaml`](cloudbuild.yaml), [`scripts/deploy.sh`](scripts/deploy.sh)
-- Google Calendar and Maps links → [`integrations/google-links.ts`](packages/core/src/integrations/google-links.ts)
+- Google Calendar and Maps links (including nearest legal-aid office) → [`integrations/google-links.ts`](packages/core/src/integrations/google-links.ts)
 - Machine-readable catalog served at `GET /api/google-services` → [`google/service-catalog.ts`](packages/core/src/google/service-catalog.ts)
 
 ## 7. Problem Statement Alignment
 
 All seven suggested use cases map to working features — see the table in [`README.md`](README.md#problem-statement-alignment).
+Beyond explaining, v0.2 helps the reader act: Document X-ray, a negotiation draft to send the other
+side, a next-steps navigator (where to complain, free legal-aid check, legal-notice reply
+countdown), read-aloud and a one-page lawyer brief.

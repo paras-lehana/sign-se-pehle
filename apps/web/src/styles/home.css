@@ -1,0 +1,182 @@
+/**
+ * Home page hero: eyebrow, kinetic headline, calls to action and trust chips.
+ *
+ * Responsibility: the first screen. Boundary: the scan illustration lives in
+ * illustration.css, the marquee in marquee.css and the feature grid in bento.css. Every
+ * animation here starts from a hidden `from` keyframe and rests visible, so the motion
+ * policy can switch it off safely.
+ */
+.hero {
+  display: grid;
+  gap: var(--space-6);
+  align-items: center;
+  padding-block: var(--space-4) var(--space-7);
+}
+
+@media (min-width: 60rem) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    min-height: calc(100dvh - var(--header-height) - 7rem);
+    padding-block: var(--space-6) var(--space-8);
+  }
+}
+
+.hero__eyebrow {
+  padding: var(--space-1) var(--space-3) var(--space-1) var(--space-2);
+  border: 1px solid var(--color-accent-line);
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-soft);
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
+.pulse-dot {
+  position: relative;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--color-accent);
+}
+
+.pulse-dot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--color-accent);
+  opacity: 0;
+  animation: pulse-ring 2.4s var(--ease-out) infinite;
+}
+
+@keyframes pulse-ring {
+  from {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(3);
+  }
+}
+
+.hero__title {
+  margin-bottom: var(--space-5);
+  font-size: var(--text-hero);
+  font-weight: 520;
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+}
+
+.kinetic {
+  display: inline-block;
+  animation: word-rise var(--duration-reveal) var(--ease-out) backwards;
+}
+
+.hero__title .kinetic:nth-child(1) {
+  animation-delay: 60ms;
+}
+
+.hero__title .kinetic:nth-child(2) {
+  animation-delay: 160ms;
+}
+
+.hero__title .kinetic:nth-child(3) {
+  animation-delay: 260ms;
+}
+
+.hero__title .kinetic:nth-child(4) {
+  animation-delay: 420ms;
+}
+
+.kinetic--accent {
+  position: relative;
+  padding-right: 0.06em;
+  background: var(--gradient-text);
+  background-size: 220% 100%;
+  background-clip: text;
+  color: transparent;
+  font-style: italic;
+  font-weight: 480;
+  animation:
+    word-rise var(--duration-reveal) var(--ease-out) backwards,
+    text-shimmer 9s var(--ease-in-out) 1.6s infinite alternate;
+}
+
+/* A hand-drawn-feeling saffron underline that draws in after the words land. */
+.kinetic--accent::after {
+  content: '';
+  position: absolute;
+  left: 0.04em;
+  right: 0.12em;
+  bottom: -0.16em;
+  height: 0.06em;
+  border-radius: var(--radius-pill);
+  background: var(--gradient-line);
+  transform-origin: 0 50%;
+  animation: underline-draw 900ms var(--ease-out) 1.1s backwards;
+}
+
+@keyframes word-rise {
+  from {
+    opacity: 0;
+    filter: blur(12px);
+    transform: translateY(0.4em) rotate(2deg);
+  }
+}
+
+@keyframes text-shimmer {
+  to {
+    background-position: 100% 0;
+  }
+}
+
+@keyframes underline-draw {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+.hero__lede {
+  margin-bottom: var(--space-6);
+  animation: fade-up var(--duration-reveal) var(--ease-out) 600ms backwards;
+}
+
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+  animation: fade-up var(--duration-reveal) var(--ease-out) 720ms backwards;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+.trust {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.trust__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-glass);
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.trust__tick {
+  color: var(--color-verified);
+  font-weight: 800;
+}

@@ -1,9 +1,10 @@
 /**
  * Typed API client for every server endpoint.
  *
- * Responsibility: send JSON to /api, validate every response with the shared core zod
- * schemas and turn failures into a typed {@link ApiError} value. Boundary: this is the
- * only module that calls `fetch`; components receive `Result`s and never parse JSON.
+ * Responsibility: send JSON to /api, validate every JSON response with the shared core
+ * zod schemas (and check that audio replies really are audio) and turn failures into a
+ * typed {@link ApiError} value. Boundary: this is the only module that calls `fetch`;
+ * components receive `Result`s and never parse JSON.
  */
 import { z } from 'zod';
 import {
@@ -16,14 +17,18 @@ import {
   type CompareRequest,
   type ErrorCode,
   type GoogleServicesResponse,
+  type NegotiateRequest,
+  type NegotiateResponse,
   type Result,
   type SimulateRequest,
+  type SpeechRequest,
   HTTP_STATUS_BY_CODE,
   analysisSchema,
   askResponseSchema,
   compareResponseSchema,
   err,
   googleServicesResponseSchema,
+  negotiateResponseSchema,
   ok,
   scenarioResultSchema,
 } from '@sign-se-pehle/core';
@@ -41,6 +46,7 @@ export type {
   AskResponse,
   CompareResponse,
   GoogleServicesResponse,
+  NegotiateResponse,
   ScenarioResult,
 } from '@sign-se-pehle/core';
 
@@ -78,13 +84,38 @@ async function readJson(response: Response): Promise<unknown> {
   }
 }
 
+function unreadableResponse(status: number): ApiError {
+  return { code: 'INTERNAL', message: UNREADABLE_RESPONSE_MESSAGE, status };
+}
+
 function toApiError(status: number, body: unknown): ApiError {
   const envelope = errorEnvelopeSchema.safeParse(body);
-  if (!envelope.success) {
-    return { code: 'INTERNAL', message: UNREADABLE_RESPONSE_MESSAGE, status };
-  }
+  if (!envelope.success) return unreadableResponse(status);
   const { code, message } = envelope.data.error;
   return { code: isErrorCode(code) ? code : 'INTERNAL', message, status };
+}
+
+/** Sends one request; resolves to the raw response only when the server answered 2xx. */
+async function send(
+  path: string,
+  payload: unknown,
+  accept: string,
+): Promise<Result<Response, ApiError>> {
+  let response: Response;
+  try {
+    response =
+      payload === undefined
+        ? await fetch(path, { headers: { Accept: accept } })
+        : await fetch(path, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: accept },
+            body: JSON.stringify(payload),
+          });
+  } catch {
+    return err(NETWORK_ERROR);
+  }
+  if (!response.ok) return err(toApiError(response.status, await readJson(response)));
+  return ok(response);
 }
 
 async function request<S extends z.ZodType>(
@@ -92,25 +123,10 @@ async function request<S extends z.ZodType>(
   schema: S,
   payload?: unknown,
 ): Promise<Result<z.output<S>, ApiError>> {
-  let response: Response;
-  try {
-    response =
-      payload === undefined
-        ? await fetch(path, { headers: { Accept: 'application/json' } })
-        : await fetch(path, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-            body: JSON.stringify(payload),
-          });
-  } catch {
-    return err(NETWORK_ERROR);
-  }
-  const body = await readJson(response);
-  if (!response.ok) return err(toApiError(response.status, body));
-  const parsed = schema.safeParse(body);
-  return parsed.success
-    ? ok(parsed.data)
-    : err({ code: 'INTERNAL', message: UNREADABLE_RESPONSE_MESSAGE, status: response.status });
+  const sent = await send(path, payload, 'application/json');
+  if (!sent.ok) return sent;
+  const parsed = schema.safeParse(await readJson(sent.value));
+  return parsed.success ? ok(parsed.data) : err(unreadableResponse(sent.value.status));
 }
 
 /** POST /api/analyze — explain one pasted or uploaded document. */
@@ -145,4 +161,25 @@ export function getHealth(): Promise<Result<HealthResponse, ApiError>> {
 /** GET /api/google-services — the catalogue of Google services the product uses. */
 export function getGoogleServices(): Promise<Result<GoogleServicesResponse, ApiError>> {
   return request('/api/google-services', googleServicesResponseSchema);
+}
+
+/** POST /api/negotiate — fairer wording for the risky clauses plus a ready-to-send message. */
+export function negotiate(payload: NegotiateRequest): Promise<Result<NegotiateResponse, ApiError>> {
+  return request('/api/negotiate', negotiateResponseSchema, payload);
+}
+
+/**
+ * POST /api/speech — Gemini read-aloud audio. Anything that is not audio (an HTML error
+ * page from a proxy, a JSON body) is rejected so the caller falls back to device speech.
+ */
+export async function synthesizeSpeech(payload: SpeechRequest): Promise<Result<Blob, ApiError>> {
+  const sent = await send('/api/speech', payload, 'audio/wav');
+  if (!sent.ok) return sent;
+  const contentType = sent.value.headers.get('content-type') ?? '';
+  if (!contentType.startsWith('audio/')) return err(unreadableResponse(sent.value.status));
+  try {
+    return ok(await sent.value.blob());
+  } catch {
+    return err(unreadableResponse(sent.value.status));
+  }
 }

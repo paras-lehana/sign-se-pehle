@@ -9,13 +9,18 @@ import type { ServerConfig } from '../config.js';
 import type { AnalysisService } from '../services/analysis-service.js';
 import type { ConcurrencyGate } from '../services/concurrency.js';
 import type { GenAiClient } from '../services/genai-client.js';
+import type { NegotiationService } from '../services/negotiation-service.js';
 import type { QaService } from '../services/qa-service.js';
+import type { SpeechClient } from '../services/speech-client.js';
 
 export interface RouteContext {
   readonly config: ServerConfig;
   readonly genai: GenAiClient;
   readonly analysis: AnalysisService;
   readonly qa: QaService;
+  readonly negotiation: NegotiationService;
+  /** Gemini text-to-speech for read-aloud. */
+  readonly speech: SpeechClient;
   /** Caps simultaneous model-backed requests. */
   readonly gate: ConcurrencyGate;
   /** Stricter per-IP limiter for the model-backed routes. */

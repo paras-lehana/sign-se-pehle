@@ -1,0 +1,56 @@
+/**
+ * Print: a clean paper version of the report, and the lawyer brief on its own.
+ *
+ * Responsibility: two print modes. Default (Ctrl + P): chrome hidden, glass flattened, ink
+ * tokens switched to paper (tokens.css). Brief mode — LawyerBrief adds
+ * `html.is-printing-brief` before calling print — shows only `.brief-print`: every element
+ * that neither is nor contains the brief is removed and its ancestors are flattened, so it
+ * works wherever the brief is mounted. Boundary: the brief's own screen hiding and
+ * typography live with the feature (brief.css).
+ */
+@media print {
+  body::before,
+  body::after,
+  .skip-link,
+  .site-header,
+  .site-footer,
+  .disclaimer-banner,
+  .hero__art,
+  .marquee-section,
+  .bento-section,
+  .analyze-form,
+  .tabs__list,
+  .xray-column__summary,
+  .button,
+  .icon-button {
+    display: none !important;
+  }
+
+  .card,
+  .glass,
+  .severity-edge {
+    backdrop-filter: none;
+    box-shadow: none;
+    break-inside: avoid;
+  }
+
+  html.is-printing-brief body *:not(.brief-print, .brief-print *, :has(.brief-print)) {
+    display: none !important;
+  }
+
+  html.is-printing-brief :has(.brief-print) {
+    position: static !important;
+    max-height: none !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: none !important;
+    box-shadow: none !important;
+    animation: none !important;
+  }
+
+  html.is-printing-brief .brief-print {
+    display: block !important;
+  }
+}

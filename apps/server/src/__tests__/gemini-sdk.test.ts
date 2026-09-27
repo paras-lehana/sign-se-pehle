@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { createGeminiCaller, minimalThinking } from '../services/gemini-sdk.js';
+import { createGeminiCaller, createGeminiSpeechCaller, minimalThinking } from '../services/gemini-sdk.js';
 
 // vi.mock is hoisted above imports, so the shared fakes must be hoisted with it.
 const { generateContent, constructorArgs } = vi.hoisted(() => {
@@ -61,5 +61,43 @@ describe('gemini sdk adapter', () => {
     await caller({ model: 'm', system: 's', prompt: 'p', files: [], jsonSchema: undefined, maxOutputTokens: 1, signal: new AbortController().signal });
     const config: unknown = generateContent.mock.calls[0]?.[0];
     expect(config).not.toHaveProperty('config.responseMimeType');
+  });
+});
+
+describe('gemini speech adapter', () => {
+  const audioPart = { inlineData: { data: 'AAAA', mimeType: 'audio/L16;codec=pcm;rate=24000' } };
+
+  beforeEach(() => {
+    generateContent.mockReset();
+  });
+
+  it('sends only audio settings and returns the inline audio', async () => {
+    generateContent.mockResolvedValue({ candidates: [{ content: { parts: [audioPart] } }] });
+    const signal = new AbortController().signal;
+    const audio = await createGeminiSpeechCaller('key-tts')({ model: 'tts-model', text: 'Read this', signal });
+
+    expect(audio).toEqual({ dataBase64: 'AAAA', mimeType: 'audio/L16;codec=pcm;rate=24000' });
+    expect(constructorArgs.at(-1)).toEqual({ apiKey: 'key-tts' });
+    expect(generateContent).toHaveBeenCalledWith({
+      model: 'tts-model',
+      contents: [{ role: 'user', parts: [{ text: 'Read this' }] }],
+      config: {
+        responseModalities: ['AUDIO'],
+        speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Kore' } } },
+        abortSignal: signal,
+      },
+    });
+  });
+
+  it('finds audio after a text part and defaults a missing MIME type to empty', async () => {
+    generateContent.mockResolvedValue({ candidates: [{ content: { parts: [{ text: 'note' }, { inlineData: { data: 'BBBB' } }] } }] });
+    const audio = await createGeminiSpeechCaller('key')({ model: 'm', text: 't', signal: new AbortController().signal });
+    expect(audio).toEqual({ dataBase64: 'BBBB', mimeType: '' });
+  });
+
+  it('returns undefined when the response has no audio', async () => {
+    generateContent.mockResolvedValue({ candidates: [] });
+    const audio = await createGeminiSpeechCaller('key')({ model: 'm', text: 't', signal: new AbortController().signal });
+    expect(audio).toBeUndefined();
   });
 });

@@ -1,0 +1,142 @@
+/**
+ * Risk score ring: a gradient stroke tinted by band that fills from empty once, then rests
+ * at the score.
+ *
+ * Responsibility: ScoreDial's look and its one-shot fill animation. Boundary: the band is
+ * also written out in words next to the ring, so colour never carries the meaning alone.
+ */
+.score {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin: 0;
+}
+
+.score__ring {
+  width: 8.5rem;
+  height: 8.5rem;
+  overflow: visible;
+}
+
+.score__track,
+.score__value {
+  fill: none;
+  stroke-width: 10;
+}
+
+.score__track {
+  stroke: var(--color-glass-strong);
+}
+
+.score__value {
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 8px var(--score-glow, var(--color-primary)));
+  animation: ring-fill 1.4s var(--ease-out) 250ms backwards;
+}
+
+/* 326.73 = 2π × 52, the ring's circumference (RING_RADIUS in ScoreDial.tsx). */
+@keyframes ring-fill {
+  from {
+    stroke-dashoffset: 326.73;
+  }
+}
+
+.score--balanced {
+  --score-glow: var(--color-low-edge);
+  --score-start: var(--color-low-edge);
+  --score-end: var(--color-low);
+}
+
+.score--review {
+  --score-glow: var(--color-medium-edge);
+  --score-start: var(--color-medium-edge);
+  --score-end: var(--color-medium);
+}
+
+.score--high-risk {
+  --score-glow: var(--color-high-edge);
+  --score-start: var(--color-high-edge);
+  --score-end: var(--color-high);
+}
+
+.score__stop--start {
+  stop-color: var(--score-start);
+}
+
+.score__stop--end {
+  stop-color: var(--score-end);
+}
+
+.score__number {
+  fill: var(--color-text);
+  font-family: var(--font-display);
+  font-size: 2.25rem;
+  font-weight: 600;
+}
+
+.score__of {
+  fill: var(--color-text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.score figcaption {
+  display: flex;
+  flex-direction: column;
+  max-width: 11rem;
+}
+
+.score__caption {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.score__band {
+  font-size: var(--text-lg);
+  line-height: var(--leading-snug);
+}
+
+.xray-column .card {
+  margin: 0;
+}
+
+.xray-column__summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-3);
+  min-height: var(--touch-target);
+  margin-bottom: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-glass);
+  font-weight: 700;
+  list-style: none;
+  cursor: pointer;
+}
+
+.xray-column__summary::-webkit-details-marker {
+  display: none;
+}
+
+.xray-column__summary::after {
+  content: '+';
+  color: var(--color-text-muted);
+  font-size: var(--text-xl);
+  font-weight: 400;
+  line-height: 1;
+}
+
+.xray-column[open] > .xray-column__summary::after {
+  content: '−';
+}
+
+.xray-column__hint {
+  flex: 1;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+

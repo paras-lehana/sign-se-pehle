@@ -15,6 +15,7 @@ export const DOCUMENT_KINDS = [
   'online-terms',
   'property-purchase',
   'service-contract',
+  'legal-notice',
   'other',
 ] as const;
 
@@ -115,9 +116,16 @@ export const KIND_PROFILES: Readonly<Record<DocumentKind, KindProfile>> = {
     roles: ['freelancer', 'client'],
     scenarios: [],
   },
+  'legal-notice': {
+    label: 'Legal notice / demand letter',
+    examples: 'Lawyer’s notices, demand letters, notices to pay dues, vacate or reply by a date',
+    defaultRole: 'party',
+    roles: ['party'],
+    scenarios: [],
+  },
   other: {
     label: 'Other legal document',
-    examples: 'Notices, NDAs, partnership deeds, affidavits and anything else',
+    examples: 'NDAs, partnership deeds, affidavits and anything else',
     defaultRole: 'party',
     roles: ['party'],
     scenarios: [],

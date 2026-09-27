@@ -1,14 +1,14 @@
 /**
- * Feature response schemas — Ask, Compare and What-if.
+ * Feature response schemas — Ask, Compare, What-if and Negotiate.
  *
  * Responsibility: the wire contracts for the follow-up features built on an
  * analysis. Boundary: shapes only; filling them is the job of pipeline/ and engine/.
  */
 import { z } from 'zod';
 import { SCENARIO_IDS } from '../domain/document-kinds.js';
-import { provenanceSchema, textSpanSchema } from './analysis.js';
+import { lawReferenceSchema, provenanceSchema, textSpanSchema } from './analysis.js';
 import { FACT_DEFINITIONS, type NumericFactKey } from './facts.js';
-import { MAX_AMOUNT_INR } from './limits.js';
+import { MAX_AMOUNT_INR, MAX_CLAUSES, MAX_ID_CHARS, MAX_NEGOTIATION_ASKS, MAX_NEGOTIATION_MESSAGE_CHARS } from './limits.js';
 
 const line = z.string().trim().min(1).max(600);
 
@@ -113,3 +113,26 @@ export const scenarioResultSchema = z.strictObject({
 });
 
 export type ScenarioResult = z.infer<typeof scenarioResultSchema>;
+
+/** One requested change: the clause as written, fairer wording and why it matters. */
+export const negotiateAskSchema = z.strictObject({
+  /** Present when `current` was matched to a clause of the analysed document. */
+  clauseId: z.string().trim().min(1).max(MAX_ID_CHARS).optional(),
+  heading: z.string().trim().min(1).max(120),
+  current: z.string().trim().min(1).max(1_200),
+  proposed: z.string().trim().min(1).max(1_200),
+  reason: line,
+});
+
+export type NegotiateAsk = z.infer<typeof negotiateAskSchema>;
+
+/** A ready-to-send change request; `references` come only from the curated law table. */
+export const negotiateResponseSchema = z.strictObject({
+  subject: z.string().trim().min(1).max(160).optional(),
+  message: z.string().trim().min(1).max(MAX_NEGOTIATION_MESSAGE_CHARS),
+  asks: z.array(negotiateAskSchema).max(MAX_NEGOTIATION_ASKS),
+  references: z.array(lawReferenceSchema).max(MAX_CLAUSES),
+  provenance: provenanceSchema,
+});
+
+export type NegotiateResponse = z.infer<typeof negotiateResponseSchema>;

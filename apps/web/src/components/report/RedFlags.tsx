@@ -7,6 +7,7 @@
  */
 import type { ReactElement } from 'react';
 import type { RedFlag } from '@sign-se-pehle/core';
+import { Icon } from '../ui/Icon';
 import { ReportSection } from './ReportSection';
 import { RiskChip } from './RiskChip';
 
@@ -22,11 +23,14 @@ export function RedFlags({ flags }: RedFlagsProps): ReactElement {
       intro="Checked by fixed rules against Indian law — the same document always gives the same flags."
     >
       {flags.length === 0 ? (
-        <p>No red flags matched our rules for your role. Still read every clause below.</p>
+        <p>No red flags matched our rules for your role. Still read every clause in the Clauses tab.</p>
       ) : (
         <ul className="plain-list flag-list" role="list">
           {flags.map((flag) => (
-            <li key={flag.ruleId} className={`flag flag--${flag.severity}`}>
+            <li
+              key={flag.ruleId}
+              className={`flag severity-edge severity-edge--${flag.severity} lift`}
+            >
               <div className="flag__head">
                 <RiskChip level={flag.severity} />
                 <h4 className="flag__title">{flag.title}</h4>
@@ -37,9 +41,15 @@ export function RedFlags({ flags }: RedFlagsProps): ReactElement {
               </p>
               {flag.law === undefined ? null : (
                 <p className="flag__law">
-                  <a href={flag.law.url} target="_blank" rel="noopener noreferrer">
+                  <a
+                    className="flag__law-link"
+                    href={flag.law.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     Source: {flag.law.act}, {flag.law.section}
                     <span className="visually-hidden"> (opens official site in a new tab)</span>
+                    <Icon name="external" className="flag__law-icon" />
                   </a>
                   <span className="flag__law-summary">{flag.law.summary}</span>
                 </p>

@@ -1,0 +1,93 @@
+/**
+ * Document-type marquee: a slow, seamless loop of pill labels.
+ *
+ * Responsibility: the loop and its fade-out edges. Boundary: WCAG 2.2.2 — it pauses on
+ * hover and, under reduced motion or the header's pause control, becomes a static wrapped
+ * list with the visual duplicate removed.
+ */
+.marquee-section {
+  margin-block: var(--space-4) var(--space-8);
+}
+
+.marquee-section__label {
+  margin-bottom: var(--space-4);
+  color: var(--color-text-muted);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-align: center;
+}
+
+.marquee {
+  display: flex;
+  gap: var(--space-3);
+  overflow: hidden;
+  mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent);
+}
+
+.marquee__track {
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--space-3);
+  animation: marquee 56s linear infinite;
+}
+
+.marquee:hover .marquee__track {
+  animation-play-state: paused;
+}
+
+@keyframes marquee {
+  to {
+    transform: translateX(calc(-100% - var(--space-3)));
+  }
+}
+
+.marquee__item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-glass);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.marquee__glyph {
+  color: var(--color-primary);
+  font-size: var(--text-xs);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee,
+  .marquee__track {
+    flex-wrap: wrap;
+    justify-content: center;
+    mask-image: none;
+  }
+
+  .marquee__track {
+    flex-shrink: 1;
+  }
+
+  .marquee__track--copy {
+    display: none;
+  }
+}
+
+:root[data-motion='paused'] .marquee,
+:root[data-motion='paused'] .marquee__track {
+  flex-wrap: wrap;
+  justify-content: center;
+  mask-image: none;
+}
+
+:root[data-motion='paused'] .marquee__track {
+  flex-shrink: 1;
+}
+
+:root[data-motion='paused'] .marquee__track--copy {
+  display: none;
+}

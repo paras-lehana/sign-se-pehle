@@ -1,0 +1,118 @@
+/**
+ * Negotiate panel.
+ *
+ * Responsibility: side-by-side option cards, a "current → fairer wording" table that
+ * turns into one labelled card per change below 48rem, and a roomy message editor.
+ * Boundary: tokens only; labels on mobile come from each cell's data-label.
+ */
+.negotiate-form__choices {
+  display: grid;
+  gap: var(--space-2) var(--space-5);
+}
+
+@media (min-width: 48rem) {
+  .negotiate-form__choices {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.negotiate-result > * + * {
+  margin-top: var(--space-5);
+}
+
+.negotiate-table__caption {
+  padding-bottom: var(--space-3);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  text-align: start;
+}
+
+.negotiate-table__heading {
+  min-width: 8rem;
+  font-weight: 700;
+}
+
+.negotiate-table__current blockquote {
+  margin: 0;
+  padding-inline-start: var(--space-3);
+  border-inline-start: 3px solid var(--color-high-edge);
+  color: var(--color-text-muted);
+}
+
+.negotiate-table__proposed {
+  background: var(--color-low-soft);
+  box-shadow: inset 3px 0 0 var(--color-low-edge);
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.negotiate-table__arrow {
+  color: var(--color-low);
+  font-weight: 800;
+}
+
+.negotiate-table__reason {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+@media (max-width: 47.99rem) {
+  .negotiate-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .negotiate-table,
+  .negotiate-table tbody,
+  .negotiate-table tr,
+  .negotiate-table th,
+  .negotiate-table td {
+    display: block;
+  }
+
+  .negotiate-table__row {
+    margin-bottom: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-glass);
+  }
+
+  .negotiate-table th,
+  .negotiate-table td {
+    padding: var(--space-2) 0;
+    border-bottom: 0;
+  }
+
+  .negotiate-table td::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: var(--space-1);
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .negotiate-table .negotiate-table__proposed {
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-sm);
+  }
+}
+
+.negotiate-message h4 {
+  margin-top: 0;
+}
+
+.negotiate-message__body {
+  width: 100%;
+  min-height: 10rem;
+  font: inherit;
+  line-height: var(--leading-body);
+  resize: vertical;
+}

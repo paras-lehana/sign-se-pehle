@@ -1,0 +1,110 @@
+/**
+ * Page column, the always-visible disclaimer and the site footer.
+ *
+ * Responsibility: the content width and the trust information under every page.
+ * Boundary: header chrome lives in layout.css.
+ */
+.site-main {
+  width: 100%;
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding: var(--space-4) var(--space-4) var(--space-8);
+}
+
+@media (min-width: 64rem) {
+  .site-main {
+    padding-inline: var(--space-5);
+  }
+}
+
+.disclaimer-banner {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-start;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 auto var(--space-5);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--color-accent-line);
+  border-radius: var(--radius-lg);
+  background: var(--color-accent-soft);
+  font-size: var(--text-sm);
+}
+
+.disclaimer-banner p {
+  margin: 0;
+}
+
+.disclaimer-banner__icon {
+  color: var(--color-accent);
+}
+
+.site-footer {
+  position: relative;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-glass);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.site-footer::before {
+  content: '';
+  position: absolute;
+  inset: -1px 0 auto;
+  height: 1px;
+  background: var(--gradient-line);
+  opacity: 0.6;
+}
+
+.site-footer__inner {
+  display: grid;
+  gap: var(--space-5);
+  width: 100%;
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding: var(--space-7) var(--space-4) var(--space-5);
+}
+
+@media (min-width: 48rem) {
+  .site-footer__inner {
+    grid-template-columns: 1.4fr 1fr 1fr;
+    padding-inline: var(--space-5);
+  }
+}
+
+.site-footer__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  color: var(--color-text);
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 620;
+}
+
+.site-footer__title {
+  margin-bottom: var(--space-2);
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+.site-footer__links {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.site-footer__links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-target);
+}
+
+.site-footer__legal {
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding: var(--space-4);
+  border-top: 1px solid var(--color-border);
+  font-size: var(--text-xs);
+  text-align: center;
+}

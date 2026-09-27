@@ -24,6 +24,12 @@ const MAX_GEMINI_TIMEOUT_MS = 110_000;
 /** Fastest structured-output models first; the failover walks this list in order. */
 const DEFAULT_GEMINI_MODELS = ['gemini-3.5-flash-lite', 'gemini-3.1-flash-lite', 'gemini-3.5-flash'];
 
+/**
+ * Text-to-speech models, newest first; both were verified live on Vertex AI express mode and
+ * the older preview is the fallback when the newer one is unavailable.
+ */
+const DEFAULT_GEMINI_TTS_MODELS = ['gemini-3.1-flash-tts-preview', 'gemini-2.5-flash-preview-tts'];
+
 /** Highest valid TCP port. */
 const MAX_PORT = 65_535;
 
@@ -39,6 +45,8 @@ export interface ServerConfig {
   /** Absent means the server runs in offline (rules-only) mode. */
   readonly geminiApiKey: string | undefined;
   readonly geminiModels: readonly string[];
+  /** Failover order for read-aloud (Gemini text-to-speech). */
+  readonly geminiTtsModels: readonly string[];
   readonly geminiTimeoutMs: number;
   readonly webDistDir: string;
   readonly nodeEnv: 'production' | 'development' | 'test';
@@ -51,6 +59,7 @@ const envSchema = z.object({
   PORT: z.coerce.number().int().min(1).max(MAX_PORT).default(DEFAULT_PORT),
   GEMINI_API_KEY: z.string().optional(),
   GEMINI_MODELS: z.string().optional(),
+  GEMINI_TTS_MODELS: z.string().optional(),
   GEMINI_TIMEOUT_MS: z.coerce
     .number()
     .int()
@@ -74,12 +83,12 @@ function readAppVersion(): string {
 }
 
 /** Splits a comma list, trimming blanks; falls back to the defaults when nothing usable is left. */
-function parseModels(value: string | undefined): readonly string[] {
+function parseModels(value: string | undefined, defaults: readonly string[]): readonly string[] {
   const models = (value ?? '')
     .split(',')
     .map((model) => model.trim())
     .filter((model) => model.length > 0);
-  return Object.freeze(models.length > 0 ? models : [...DEFAULT_GEMINI_MODELS]);
+  return Object.freeze(models.length > 0 ? models : [...defaults]);
 }
 
 /**
@@ -94,7 +103,8 @@ export function loadConfig(env: EnvSource = process.env): ServerConfig {
   return Object.freeze({
     port: parsed.PORT,
     geminiApiKey: key !== undefined && key.length > 0 ? key : undefined,
-    geminiModels: parseModels(parsed.GEMINI_MODELS),
+    geminiModels: parseModels(parsed.GEMINI_MODELS, DEFAULT_GEMINI_MODELS),
+    geminiTtsModels: parseModels(parsed.GEMINI_TTS_MODELS, DEFAULT_GEMINI_TTS_MODELS),
     geminiTimeoutMs: parsed.GEMINI_TIMEOUT_MS,
     webDistDir: parsed.WEB_DIST_DIR ?? DEFAULT_WEB_DIST_DIR,
     nodeEnv: parsed.NODE_ENV,

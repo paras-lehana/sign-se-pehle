@@ -1,0 +1,229 @@
+/**
+ * Workspace: the analyze form card, its status lines, the progress pipeline and the
+ * loading fallback.
+ *
+ * Responsibility: the "check a document" area on the home page. Boundary: tab visuals
+ * live in tabs.css; field and button styles in forms.css; the report in report.css.
+ */
+.workspace {
+  scroll-margin-top: calc(var(--header-height) + var(--space-4));
+  margin-block: var(--space-7) var(--space-6);
+}
+
+.analyze-form {
+  display: grid;
+  gap: var(--space-5);
+  padding: var(--space-4);
+  border-radius: var(--radius-xl);
+}
+
+@media (min-width: 48rem) {
+  .analyze-form {
+    padding: var(--space-6);
+  }
+}
+
+@media (min-width: 64rem) {
+  .analyze-form {
+    grid-template-columns: minmax(0, 1.65fr) minmax(17rem, 1fr);
+    gap: var(--space-6);
+  }
+
+  .analyze-form__side {
+    padding-left: var(--space-6);
+    border-left: 1px solid var(--color-border);
+  }
+}
+
+.analyze-form__side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.analyze-form__side .options-grid {
+  grid-template-columns: 1fr;
+}
+
+.analyze-form__privacy {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-start;
+  margin: var(--space-3) 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.analyze-form__privacy-icon {
+  flex-shrink: 0;
+  width: 1.1rem;
+  height: 1.1rem;
+  margin-top: 0.15rem;
+  color: var(--color-verified);
+}
+
+.icon {
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.paste-field textarea {
+  min-height: 16rem;
+}
+
+/* The Upload, Camera and Samples panels share one dashed drop-zone look. */
+.input-panel,
+.upload-field {
+  min-height: 10rem;
+  padding: var(--space-5);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--color-glass);
+}
+
+.input-panel {
+  display: grid;
+  gap: var(--space-4);
+  justify-items: start;
+}
+
+.selected-file {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin-top: var(--space-3);
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
+  border: 1px solid var(--color-primary-line);
+  border-radius: var(--radius-lg);
+  background: var(--color-primary-soft);
+}
+
+.selected-file__icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--color-primary);
+}
+
+.selected-file__name {
+  flex: 1;
+  margin: 0;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.selected-file__note {
+  color: var(--color-text-muted);
+  font-weight: 400;
+}
+
+/* Progress: four nodes on a glowing rail; the active node breathes, done nodes turn green. */
+.progress {
+  margin-top: var(--space-5);
+  padding: var(--space-5);
+}
+
+.progress__title {
+  font-weight: 700;
+}
+
+.progress__steps {
+  position: relative;
+  display: grid;
+  gap: var(--space-4);
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 48rem) {
+  .progress__steps {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .progress__steps::before {
+    content: '';
+    position: absolute;
+    top: 1.25rem;
+    left: 12.5%;
+    right: 12.5%;
+    height: 2px;
+    background: var(--gradient-line);
+    opacity: 0.45;
+  }
+
+  .progress__step {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+.progress__step {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--color-text-muted);
+}
+
+.progress__marker {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 50%;
+  background: var(--color-bg-elevated);
+  font-weight: 700;
+}
+
+.progress__step--active {
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+.progress__step--active .progress__marker {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 4px var(--color-accent-soft), 0 0 24px var(--color-accent-line);
+  animation: node-breathe 1.4s var(--ease-in-out) infinite alternate;
+}
+
+.progress__step--done .progress__marker {
+  border-color: var(--color-low-edge);
+  background: var(--color-low-soft);
+  color: var(--color-low);
+}
+
+@keyframes node-breathe {
+  from {
+    box-shadow: 0 0 0 2px var(--color-accent-soft), 0 0 8px var(--color-accent-line);
+  }
+}
+
+.loading-fallback {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: var(--space-5) 0;
+  color: var(--color-text-muted);
+}
+
+.loading-fallback__spinner {
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid var(--color-border-strong);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  animation: spin 800ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

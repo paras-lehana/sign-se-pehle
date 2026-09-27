@@ -1,15 +1,19 @@
 /**
- * Analyze form tests: empty start, validation messages and the typed payload.
+ * Analyze form tests: empty start, the four input tabs, validation messages, the typed
+ * payload, uploads, camera photos and samples (which fill the form but never submit).
  */
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { type AnalyzeRequest, MAX_UPLOAD_BYTES, MIN_DOCUMENT_CHARS } from '@sign-se-pehle/core';
 import { AnalyzeForm } from '../components/analyze/AnalyzeForm';
+import { SAMPLE_DOCUMENTS } from '../lib/samples';
 
 /** A realistic clause long enough to pass the minimum-length check. */
 const RENT_CLAUSE =
   '1. RENT. The Tenant shall pay a monthly rent of Rs. 20,000 (Rupees Twenty Thousand only) on or before the 5th day of every month.';
+
+const INPUT_TABS = ['Paste', 'Upload', 'Camera', 'Samples'] as const;
 
 function setup(): { onSubmit: ReturnType<typeof vi.fn<(payload: AnalyzeRequest) => void>> } {
   const onSubmit = vi.fn<(payload: AnalyzeRequest) => void>();
@@ -18,8 +22,10 @@ function setup(): { onSubmit: ReturnType<typeof vi.fn<(payload: AnalyzeRequest) 
 }
 
 describe('AnalyzeForm', () => {
-  it('starts empty with no sample text', () => {
+  it('starts empty on the Paste tab with no sample text', () => {
     setup();
+    expect(screen.getAllByRole('tab').map((tab) => tab.textContent)).toEqual([...INPUT_TABS]);
+    expect(screen.getByRole('tab', { name: 'Paste' })).toHaveAttribute('aria-selected', 'true');
     expect(screen.getByLabelText('Paste the document text')).toHaveValue('');
   });
 
@@ -58,9 +64,11 @@ describe('AnalyzeForm', () => {
   it('rejects unsupported and oversize files before upload', async () => {
     setup();
     const user = userEvent.setup({ applyAccept: false });
-    const input = screen.getByLabelText('Or upload a PDF or photo');
+    await user.click(screen.getByRole('tab', { name: 'Upload' }));
+    const input = screen.getByLabelText('Upload a PDF or photo');
     await user.upload(input, new File(['hello'], 'notes.txt', { type: 'text/plain' }));
     expect(screen.getByRole('alert')).toHaveTextContent(/PDF or a photo/);
+    expect(input).toHaveAttribute('aria-invalid', 'true');
     const big = new File([new Uint8Array(MAX_UPLOAD_BYTES + 1)], 'scan.pdf', {
       type: 'application/pdf',
     });
@@ -68,14 +76,16 @@ describe('AnalyzeForm', () => {
     expect(screen.getByRole('alert')).toHaveTextContent(/larger than/);
   });
 
-  it('sends an accepted file as base64', async () => {
+  it('sends an accepted file as base64 and lets the reader remove it', async () => {
     const { onSubmit } = setup();
     const user = userEvent.setup();
     const pdfBytes = '%PDF-1.4 sample';
+    await user.click(screen.getByRole('tab', { name: 'Upload' }));
     await user.upload(
-      screen.getByLabelText('Or upload a PDF or photo'),
+      screen.getByLabelText('Upload a PDF or photo'),
       new File([pdfBytes], 'agreement.pdf', { type: 'application/pdf' }),
     );
+    expect(screen.getByText('agreement.pdf')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Explain this document' }));
     expect(onSubmit).toHaveBeenCalledWith({
       document: {
@@ -86,5 +96,36 @@ describe('AnalyzeForm', () => {
       },
       language: 'en',
     });
+    await user.click(screen.getByRole('button', { name: 'Remove file' }));
+    expect(screen.queryByText('agreement.pdf')).not.toBeInTheDocument();
+  });
+
+  it('uses a camera photo as the chosen file', async () => {
+    setup();
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('tab', { name: 'Camera' }));
+    await user.upload(
+      screen.getByLabelText(/Take a photo/),
+      new File(['jpeg-bytes'], 'page-1.jpg', { type: 'image/jpeg' }),
+    );
+    expect(screen.getByText('page-1.jpg')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Remove file' })).toBeInTheDocument();
+  });
+
+  it('fills text, kind and role from a sample without submitting', async () => {
+    const { onSubmit } = setup();
+    const user = userEvent.setup();
+    const sample = SAMPLE_DOCUMENTS[0];
+    expect(sample).toBeDefined();
+    if (sample === undefined) return;
+    await user.click(screen.getByRole('tab', { name: 'Samples' }));
+    await user.click(screen.getByRole('button', { name: new RegExp(`^${sample.label}`) }));
+    const textarea = screen.getByLabelText('Paste the document text');
+    expect(textarea).toHaveValue(sample.text);
+    expect(textarea).toHaveFocus();
+    expect(screen.getByRole('tab', { name: 'Paste' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByLabelText(/Document type/)).toHaveValue(sample.kind);
+    expect(screen.getByLabelText(/I am the/)).toHaveValue(sample.role);
+    expect(onSubmit).not.toHaveBeenCalled();
   });
 });

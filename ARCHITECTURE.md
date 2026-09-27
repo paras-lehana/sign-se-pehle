@@ -7,24 +7,26 @@ needs language understanding goes through one Gemini gateway in the server.
 ## Layer diagram
 
 ```
-┌────────────────────────────── Cloud Run service (asia-south1) ──────────────────────────────┐
+┌──────────────────── Cloud Run service (asia-south1, mirrored in asia-south2) ────────────────┐
 │                                                                                              │
-│  apps/web (React 19 SPA, static)            apps/server (Express 5)                          │
-│  ─ Analyze / Report / Ask / What-if    ──►   /api/analyze  /api/ask  /api/compare            │
-│  ─ Compare / About                    same   /api/simulate /api/health /api/google-services  │
-│  ─ validates responses with core zod  origin   │                                             │
-│                                                ├─ middleware: helmet CSP · rate limit ·      │
-│                                                │  validate (zod) · request log · errors      │
-│                                                ├─ services/genai-client.ts ──► Gemini API    │
-│                                                └─ services/analysis-service.ts               │
-│                                                        │                                     │
-│  packages/core (pure: no I/O, no clock, no randomness) ◄┘                                    │
-│  ─ schemas (zod) · knowledge (laws, red-flag rules) · engine (red flags, score, money,       │
-│    what-if, quote verification, amount-in-words, retrieval) · privacy (PII redaction) ·      │
-│    genai (prompts, nonce boundary, output schemas) · offline analyser · pipeline assembly    │
+│  apps/web (React 19 SPA, static)             apps/server (Express 5)                         │
+│  ─ Workspace: input tabs, X-ray + report ──► /api/analyze  /api/ask  /api/compare           │
+│    tabs (Overview · Red flags · Clauses · same /api/simulate /api/negotiate /api/speech     │
+│    Ask · What if · Next steps · Negotiate origin /api/health /api/google-services           │
+│    · Brief) · Compare / About (lazy)              │                                          │
+│  ─ validates responses with core zod              ├─ middleware: helmet CSP · rate limit ·   │
+│  ─ on-device: eligibility, deadline, X-ray,       │  validate (zod) · request log · errors   │
+│    glossary (core functions, no request)          ├─ services/genai-client.ts ──► Gemini     │
+│                                                   ├─ services/speech-client.ts ─► Gemini TTS │
+│                                                   └─ services/analysis- · negotiation-service│
+│                                                           │                                  │
+│  packages/core (pure: no I/O, no clock, no randomness) ◄──┘                                  │
+│  ─ schemas (zod) · knowledge (laws, red-flag rules, glossary, forums) · engine (red flags,   │
+│    score, money, what-if, quote verification, X-ray segments, legal-aid eligibility, reply   │
+│    deadline, retrieval) · privacy (PII redaction) · genai (prompts, nonce boundary, output   │
+│    schemas) · offline analyser + negotiator · pipeline assembly · audio (PCM → WAV)          │
 └──────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
-
 **Why this shape**
 
 - **One deployable.** The web build is served by the same Express process as the API, so the
@@ -47,6 +49,15 @@ request ─► zod validate ─► (file? Gemini vision transcription) ─► re
         ─► analysisSchema.parse (wire contract guaranteed) ─► response with provenance
 ```
 
+**Negotiate** reuses the same gate: the risky clauses from the report are re-redacted, one Gemini
+call proposes fairer wording plus a ready message, `assembleNegotiation` keeps only changes whose
+`current` text matches a real clause quote and attaches law references from the curated table
+(the model never cites law), and `negotiateOffline` answers with the same shape if Gemini fails.
+
+**Speech** takes at most 1,500 characters in the POST body, calls the Gemini TTS chain, wraps the
+24 kHz PCM in a WAV header (`pcmToWav`) and returns `audio/wav` with `Cache-Control: no-store`.
+On any failure the browser falls back to its own speech synthesis.
+
 ## Efficiency decisions
 
 | Decision | Where | Why |
@@ -59,6 +70,11 @@ request ─► zod validate ─► (file? Gemini vision transcription) ─► re
 | Stateless server, no database | whole server | Horizontal scaling with no sessions; nothing to secure at rest |
 | Deterministic engine in core, not LLM | `packages/core/src/engine` | Exact, instant, free, testable |
 | Static assets with immutable caching + gzip | `server.ts` | Repeat visits load from cache |
+| Route- and tab-level code splitting (`React.lazy`): Compare, About, Next steps, Negotiate, Brief | `App.tsx`, `report/lazy-panels.ts` | The first report paint ships only what it shows |
+| Eligibility, reply deadline, X-ray segments and glossary run in the browser from core | `features/*`, `packages/core/src/engine` | Zero requests, instant, and sensitive answers never leave the device |
+| Negotiation works from the report already in memory (no re-analysis); one call, offline fallback | `negotiation-service.ts` | One extra call only when the reader asks for it |
+| Speech is on demand, capped at 1,500 characters, short TTS model first | `routes/speech.ts`, `config.ts` | Audio is generated only for what the reader presses Listen on |
+| Self-hosted variable fonts (npm `@fontsource-variable`), no external requests | `apps/web/src/main.tsx` | No third-party round trip; CSP stays `'self'` |
 | No UI framework CSS runtime; plain CSS tokens | `apps/web/src/styles` | Small bundle, strict CSP compatible |
 | min 1 / max 3 Cloud Run instances, 512 MiB | `cloudbuild.yaml` | No cold start for judges; spend capped |
 | asia-south1 (Mumbai) | `cloudbuild.yaml` | Closest region to Indian users |

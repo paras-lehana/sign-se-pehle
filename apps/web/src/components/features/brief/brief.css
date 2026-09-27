@@ -1,0 +1,122 @@
+/**
+ * Lawyer brief: on-screen summary and the printed one-page document.
+ *
+ * Responsibility: keep `.brief-print` off screen, and while `html.is-printing-brief` is
+ * set, print only it — compact black-on-white type sized to fit one A4 page for a typical
+ * document. Boundary: tokens only; switching to the light colour scheme for print makes the
+ * system colours Canvas/CanvasText resolve to paper white and ink black.
+ */
+.brief-contents {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-4);
+}
+
+.brief-contents span[aria-hidden='true'] {
+  color: var(--color-low);
+  font-weight: 800;
+}
+
+@media screen {
+  .brief-print {
+    display: none;
+  }
+}
+
+@media print {
+  html:not(.is-printing-brief) .brief-print,
+  html.is-printing-brief body > :not(.brief-print) {
+    display: none;
+  }
+
+  html.is-printing-brief {
+    color-scheme: light;
+  }
+
+  html.is-printing-brief body {
+    background: Canvas;
+  }
+
+  .brief-print {
+    display: block;
+    background: Canvas;
+    color: CanvasText;
+    font-family: var(--font-sans);
+    font-size: 10pt;
+    line-height: 1.4;
+  }
+
+  .brief-print__brand {
+    margin: 0 0 2pt;
+    font-size: 8pt;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .brief-print h2 {
+    margin: 0 0 3pt;
+    font-family: var(--font-display);
+    font-size: 16pt;
+    line-height: 1.2;
+  }
+
+  .brief-print__meta {
+    font-size: 8.5pt;
+  }
+
+  .brief-print h3 {
+    margin: 9pt 0 3pt;
+    padding-bottom: 2pt;
+    border-bottom: 1px solid currentcolor;
+    font-size: 11pt;
+    break-after: avoid;
+  }
+
+  .brief-print p,
+  .brief-print ul,
+  .brief-print ol {
+    margin: 0 0 4pt;
+  }
+
+  .brief-print ul,
+  .brief-print ol {
+    padding-left: 14pt;
+  }
+
+  .brief-print li {
+    margin-bottom: 2pt;
+    break-inside: avoid;
+  }
+
+  .brief-print__source {
+    display: block;
+    font-size: 8pt;
+    overflow-wrap: anywhere;
+  }
+
+  .brief-print__table {
+    border-collapse: collapse;
+  }
+
+  .brief-print__table th,
+  .brief-print__table td {
+    padding: 1pt 12pt 1pt 0;
+    font-weight: 400;
+    text-align: left;
+  }
+
+  .brief-print__table td {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .brief-print__table tr:last-child > * {
+    font-weight: 700;
+  }
+
+  .brief-print__footer {
+    margin-top: 10pt;
+    padding-top: 4pt;
+    border-top: 1px solid currentcolor;
+    font-size: 8.5pt;
+  }
+}

@@ -21,12 +21,16 @@ import { registerAsk } from './routes/ask.js';
 import { registerCompare } from './routes/compare.js';
 import type { RouteContext } from './routes/context.js';
 import { registerHealth } from './routes/health.js';
+import { registerNegotiate } from './routes/negotiate.js';
 import { registerServices } from './routes/services.js';
 import { registerSimulate } from './routes/simulate.js';
+import { registerSpeech } from './routes/speech.js';
 import { createAnalysisService } from './services/analysis-service.js';
 import { createConcurrencyGate } from './services/concurrency.js';
 import type { GenAiClient } from './services/genai-client.js';
+import { createNegotiationService } from './services/negotiation-service.js';
 import { createQaService } from './services/qa-service.js';
+import type { SpeechClient } from './services/speech-client.js';
 import { registerStaticWeb } from './static-web.js';
 
 /** Model-backed routes cost quota: 30 per minute per IP is generous for a human reader. */
@@ -57,6 +61,7 @@ const TRUSTED_PROXY_HOPS = 1;
 
 export interface AppDeps {
   readonly genai: GenAiClient;
+  readonly speech: SpeechClient;
   readonly now: () => number;
   readonly logger: Logger;
 }
@@ -71,6 +76,8 @@ function securityHeaders(): ReturnType<typeof helmet> {
         scriptSrc: [self],
         styleSrc: [self],
         imgSrc: [self, 'data:'],
+        // Read-aloud plays synthesised WAV audio from a blob: URL created in the page.
+        mediaSrc: [self, 'blob:'],
         connectSrc: [self],
         fontSrc: [self],
         objectSrc: ["'none'"],
@@ -93,7 +100,7 @@ function securityHeaders(): ReturnType<typeof helmet> {
 /**
  * Builds the Express app.
  * @example
- * const app = buildApp(loadConfig(), { genai, now: Date.now, logger });
+ * const app = buildApp(loadConfig(), { genai, speech, now: Date.now, logger });
  */
 export function buildApp(config: ServerConfig, deps: AppDeps): Express {
   const app = express();
@@ -113,6 +120,8 @@ export function buildApp(config: ServerConfig, deps: AppDeps): Express {
     genai: deps.genai,
     analysis: createAnalysisService(services),
     qa: createQaService(services),
+    negotiation: createNegotiationService(services),
+    speech: deps.speech,
     gate: createConcurrencyGate(MAX_IN_FLIGHT_AI),
     aiLimiter: createRateLimiter({ perMinute: AI_REQUESTS_PER_MINUTE, now: deps.now }),
     smallJson: express.json({ limit: DEFAULT_BODY_LIMIT }),
@@ -133,6 +142,8 @@ export function buildApp(config: ServerConfig, deps: AppDeps): Express {
   registerAsk(api, ctx);
   registerCompare(api, ctx);
   registerSimulate(api, ctx);
+  registerNegotiate(api, ctx);
+  registerSpeech(api, ctx);
   api.use((_req, res) => sendError(res, appError('NOT_FOUND')));
   app.use('/api', api);
 

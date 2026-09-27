@@ -106,6 +106,9 @@ export type SimulateRequest = z.infer<typeof simulateRequestSchema>;
 export const NEGOTIATION_TONES = ['polite', 'firm'] as const;
 export const NEGOTIATION_CHANNELS = ['email', 'whatsapp'] as const;
 
+export type NegotiationTone = (typeof NEGOTIATION_TONES)[number];
+export type NegotiationChannel = (typeof NEGOTIATION_CHANNELS)[number];
+
 export const negotiateRequestSchema = z.strictObject({
   kind: z.enum(DOCUMENT_KINDS),
   role,
@@ -131,7 +134,7 @@ export type BriefRequest = z.infer<typeof briefRequestSchema>;
 
 /**
  * Free legal aid screening answers. Mirrors the categories in section 12 of the
- * Legal Services Authorities Act, 1987 (see knowledge/legal-aid.ts).
+ * Legal Services Authorities Act, 1987 (see engine/eligibility.ts).
  */
 export const eligibilityRequestSchema = z.strictObject({
   isWoman: z.boolean(),

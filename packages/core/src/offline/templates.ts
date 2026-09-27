@@ -68,16 +68,24 @@ export const KIND_CHECKLIST: Readonly<Record<DocumentKind, readonly string[]>> =
   'online-terms': ['Check what data is collected and who it is shared with.', 'Find how to cancel and delete your account.'],
   'property-purchase': ['Check the RERA registration number of the project.', 'Match the carpet area and possession date with the brochure.'],
   'service-contract': ['Check payment milestones and late-payment terms.', 'Confirm who owns the work once it is paid for.'],
+  'legal-notice': [
+    'Note the date you received the notice and the reply deadline it gives.',
+    'Keep the envelope, courier receipt or email the notice came with.',
+    'Collect the documents the notice refers to, such as agreements, invoices or cheques.',
+  ],
   other: ['Make sure every blank is filled before signing.'],
 };
 
+/** A notice is received, not signed, so the signing checks do not apply to it. */
+const UNSIGNED_KINDS: ReadonlySet<DocumentKind> = new Set(['legal-notice']);
+
 /**
- * Checklist for a kind, followed by the checks that apply to every document.
+ * Checklist for a kind, followed by the signing checks for documents the reader signs.
  * @example
  * checklistFor('rental').length > 2; // true
  */
 export function checklistFor(kind: DocumentKind): string[] {
-  return [...KIND_CHECKLIST[kind], ...COMMON_CHECKS];
+  return UNSIGNED_KINDS.has(kind) ? [...KIND_CHECKLIST[kind]] : [...KIND_CHECKLIST[kind], ...COMMON_CHECKS];
 }
 
 /** Whose obligations are whose, per kind: [reader-side words, other-side words]. */
@@ -89,4 +97,5 @@ export const OBLIGATION_PARTIES: Readonly<Partial<Record<DocumentKind, readonly 
   'online-terms': [/\b(?:user|you)\b/i, /\b(?:company|we)\b/i],
   'property-purchase': [/\b(?:allottee|buyer|purchaser)\b/i, /\b(?:promoter|builder|developer)\b/i],
   'service-contract': [/\b(?:service provider|freelancer|consultant|contractor)\b/i, /\bclient\b/i],
+  'legal-notice': [/\b(?:you|noticee|addressee)\b/i, /\b(?:my|our) client\b/i],
 };

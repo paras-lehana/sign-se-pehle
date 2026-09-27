@@ -55,3 +55,24 @@ export function makeClause(overrides: Partial<Clause> = {}): Clause {
     ...overrides,
   };
 }
+
+/** A realistic (fictional) lawyer's demand notice: dated, with a 15-day reply window. */
+export const LEGAL_NOTICE = `LEGAL NOTICE
+
+Date: 10/09/2026
+
+To,
+Mr. Arjun Mehta, Flat 12, Shanti Nagar, Pune
+
+Subject: Legal notice for recovery of unpaid dues of Rs. 1,80,000
+
+1. Under instructions from my client, M/s Sai Traders, I hereby serve you with this legal notice.
+
+2. My client supplied goods to you against invoices dated 05/06/2026 for a total of Rs. 1,80,000, which remains unpaid despite reminders.
+
+3. You are hereby called upon to pay the sum of Rs. 1,80,000 within 15 days of receipt of this notice, failing which my client shall be constrained to initiate appropriate legal proceedings against you.
+
+4. A copy of this notice is retained in my office for record and further action.
+
+Advocate R. K. Deshpande
+`;
