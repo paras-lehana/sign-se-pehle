@@ -125,9 +125,18 @@ export function speakWithBrowser(
 }
 
 /**
+ * Most browsers settle `HTMLMediaElement.play()` in well under a second; some automated or
+ * locked-down browser contexts leave it pending forever instead of rejecting (found testing
+ * against a real deployment, 28 Sep 2026). Past this, treat it as refused so the reader falls
+ * back to the device voice instead of a Listen button stuck saying "Preparing audio…" forever.
+ */
+const PLAY_TIMEOUT_MS = 4_000;
+
+/**
  * Plays an audio blob; resolves to a stop function, or null when playback was refused
- * (autoplay policy, unsupported codec). The object URL is revoked on stop, on end and
- * on failure, so no blob outlives its playback.
+ * (autoplay policy, unsupported codec) or never started within {@link PLAY_TIMEOUT_MS}. The
+ * object URL is revoked on stop, on end, on failure and on timeout, so no blob outlives its
+ * playback.
  * @example
  * const stop = await playAudioBlob(wav, () => setIdle());
  */
@@ -150,12 +159,20 @@ export async function playAudioBlob(blob: Blob, onEnd: () => void): Promise<Stop
     },
     { once: true },
   );
+  // Cleared as soon as the race settles, so a fast, normal play() never leaves a rejection
+  // pending on `timeout` after this function has moved on.
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_resolve, reject) => {
+    timer = setTimeout(() => reject(new Error('play() never settled')), PLAY_TIMEOUT_MS);
+  });
   try {
-    await audio.play();
+    await Promise.race([audio.play(), timeout]);
     return release;
   } catch {
     release();
     return null;
+  } finally {
+    clearTimeout(timer);
   }
 }
 
