@@ -30,14 +30,21 @@ Read-aloud in a choice of voice and language, and the feature bento moved above 
 - Read-aloud text is redacted the same way document text is before any translator or voice
   (including Sarvam and Google's free endpoints) ever sees it.
 
+### Fixed
+
+- Some browser contexts leave `HTMLMediaElement.play()` pending forever instead of resolving or
+  rejecting (found testing the deployed app in a real, automated Chrome tab), which stuck the
+  Listen button at "Preparing audio…" indefinitely. `playAudioBlob()` now races `play()` against
+  a 4-second timeout and falls back to the device voice past that point.
+
 ### Verified
 
 - `npm run type-check`, `npm run lint` (zero warnings), `npm run dup-check` (0 clones).
-- `npm run test:coverage`: 598 tests (core 360, server 108, web 130); every new speech module at
+- `npm run test:coverage`: 602 tests (core 360, server 108, web 134); every new speech module at
   100% statement, branch and line coverage.
 - `npx playwright test`: 32 tests (journeys + axe, desktop and Pixel 7, both themes) — unchanged
-  from 0.2.0; the voice/language picker was verified in a live browser pass instead (see
-  `docs/tasks/2026-09-28-listen-11-languages/`).
+  from 0.2.0; the voice/language picker was verified live instead, against four real public
+  documents in a real browser (see `docs/tasks/2026-09-28-listen-11-languages/`).
 
 ## [0.2.0] — 2026-09-27
 
