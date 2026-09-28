@@ -1,6 +1,6 @@
 {
   "name": "sign-se-pehle",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "description": "Sign Se Pehle — understand any Indian legal document before you sign it. Gemini-powered plain-language explanations, law-anchored red flags, what-if consequences and lawyer-ready briefs. Information, not legal advice.",
   "license": "MIT",

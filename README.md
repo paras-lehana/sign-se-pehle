@@ -1,6 +1,6 @@
 # Sign Se Pehle — understand every clause before you sign
 
-> **Version 0.2.0** — "Midnight glass" redesign, Document X-ray, Negotiate, Next steps, Listen in 11 languages and a lawyer brief. Live on Google Cloud Run (asia-south1 Mumbai, mirrored in asia-south2 Delhi).
+> **Version 0.3.0** — "Midnight glass" redesign, Document X-ray, Negotiate, Next steps, a lawyer brief, and Listen in any of 11 languages with a choice of voice (Google Translate’s free voice by default, Sarvam AI, or Gemini). Live on Google Cloud Run (asia-south1 Mumbai, mirrored in asia-south2 Delhi).
 
 **Paste or photograph any Indian legal document — a rent agreement, job offer, loan, insurance policy
 or app terms — and see what every clause means for _you_, in your language, before you sign it.**
@@ -14,7 +14,7 @@ simulator shows the money at stake. _Information, not legal advice._
 
 **30-second check for evaluators**
 
-1. `curl https://sign-se-pehle-767171449038.asia-south1.run.app/api/health` → `{"status":"ok","version":"0.2.0","ai":{"configured":true,…}}`
+1. `curl https://sign-se-pehle-767171449038.asia-south1.run.app/api/health` → `{"status":"ok","version":"0.3.0","ai":{"configured":true,…},"speech":{"voices":["google","sarvam","gemini"]}}`
 2. Open the live app (or tap **Samples**), paste any clause (e.g. _"The tenant shall pay a security deposit of Rs. 1,50,000, refundable at the landlord's sole discretion."_), choose **Tenant**, press **Explain this document** — the report is labelled **Explained by Gemini** with the model name and timing.
 3. Open the **Ask** tab and type a question — answers cite verified quotes or say _not in the document_. Then try **Negotiate** (fairer wording + a ready WhatsApp/email message) and **Next steps** (where to go, free legal aid check).
 4. Clone and run with **zero keys**: `npm install && npm test && npm run build && npm start` → every feature works in labelled **offline mode**.
@@ -57,7 +57,7 @@ navigable for people who cannot easily reach a lawyer.
 | **Document X-ray** | Your own text with every clause highlighted by risk; tap a highlight to jump to its plain-language explanation | — (verified quote spans) |
 | **Negotiate** | Fairer wording for each risky clause plus a polite or firm message, ready for WhatsApp or email, in your language, with the official sources behind each request | Gemini API |
 | **Next steps** | Where to go (legal aid, consumer commission, RBI, IRDAI, labour, cyber crime), nearest free legal aid on Google Maps, a free legal aid eligibility check that runs only on your device, and a reply-deadline countdown for legal notices | Google Maps links |
-| **Listen & speak** | Hear the summary and answers read aloud in 11 Indian languages; ask questions by voice where the browser supports it | Gemini text-to-speech |
+| **Listen & speak** | Hear the summary and answers read aloud in any of 11 Indian languages — independent of the language it was explained in — with a choice of voice (Google Translate’s free voice by default, Sarvam AI, or Gemini); ask questions by voice where the browser supports it | Google Translate (free) |
 | **Lawyer brief** | A one-page printable brief (summary, red flags with sources, money, dates, questions) and a WhatsApp share of the questions | — |
 | **Easy start** | One-tap sample documents, a camera button for phone photos, and plain meanings for legal jargon inside every clause | — |
 
@@ -91,7 +91,8 @@ Cloud Run service (Express)                              packages/core (pure, te
    └─ assembleAnalysis() ───────────────────────────────┴─► quote-verify, red-flags, score, money
    ▼
 Report tabs: Overview · Red flags · Clauses · Ask · What if · Next steps · Negotiate · Brief
-(+ Document X-ray beside the tabs; POST /api/negotiate and /api/speech call Gemini again on demand)
+(+ Document X-ray beside the tabs; POST /api/negotiate calls Gemini again on demand;
+POST /api/speech translates when needed and speaks with the reader's chosen voice)
 ```
 
 ## Assumptions Made
@@ -120,10 +121,18 @@ Report tabs: Overview · Red flags · Clauses · Ask · What if · Next steps ·
 See [GENAI_ARCHITECTURE.md](GENAI_ARCHITECTURE.md) for the full mapping. In short: **Google Gemini
 API** (`@google/genai`), server-side only, in [`apps/server/src/services/genai-client.ts`](apps/server/src/services/genai-client.ts),
 used for (1) OCR of PDFs/photos, (2) structured clause-by-clause analysis, (3) grounded Q&A,
-(4) draft comparison and (5) fairer wording and negotiation messages, plus (6) read-aloud audio from
-Gemini text-to-speech ([`services/speech-client.ts`](apps/server/src/services/speech-client.ts)). Every
+(4) draft comparison and (5) fairer wording and negotiation messages, plus (6) one of three
+read-aloud voices ([`services/speech-client.ts`](apps/server/src/services/speech-client.ts)). Every
 call has a model failover chain and a labelled fallback. In production Gemini is served through
 **Vertex AI** on Google Cloud.
+
+Read-aloud (item 6) is not Gemini-only: **Google Translate's free web API** speaks and translates
+all 11 languages with no key and is the default voice; **Sarvam AI** (`bulbul:v3`) is an opt-in
+Indian-voice alternative and the only voice that speaks Odia; **Gemini text-to-speech** is the
+third option. The reader picks a voice and a listening language independently of the language the
+document was explained in — see [`services/speech-service.ts`](apps/server/src/services/speech-service.ts),
+[`services/google-free-client.ts`](apps/server/src/services/google-free-client.ts) and
+[`services/sarvam-client.ts`](apps/server/src/services/sarvam-client.ts).
 
 ## Tech stack
 
@@ -147,7 +156,8 @@ npm start         # http://localhost:8080 (offline mode without a key)
 ```
 
 For live Gemini locally, copy `.env.example` to `apps/server/.env` and set `GEMINI_API_KEY`
-(add `GOOGLE_GENAI_USE_VERTEXAI=true` when the key is a Vertex AI key).
+(add `GOOGLE_GENAI_USE_VERTEXAI=true` when the key is a Vertex AI key). Read-aloud works with no
+keys at all (Google Translate's free voice); add `SARVAM_API_KEY` for the Sarvam voice too.
 Deploy: `scripts/deploy.sh <project-id> asia-south1` (Secret Manager + Cloud Build + smoke test).
 
 ## For evaluators

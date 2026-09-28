@@ -10,8 +10,11 @@ import { buildNegotiation, buildSampleAnalysis } from './feature-fixtures';
 const HTTP_BAD_GATEWAY = 502;
 const WAV_BYTES = new Uint8Array([82, 73, 70, 70, 0, 0, 0, 0]);
 
-function audioResponse(contentType: string): Response {
-  return new Response(WAV_BYTES, { status: 200, headers: { 'Content-Type': contentType } });
+function audioResponse(
+  contentType: string,
+  headers: Record<string, string> = {},
+): Response {
+  return new Response(WAV_BYTES, { status: 200, headers: { 'Content-Type': contentType, ...headers } });
 }
 
 describe('negotiate', () => {
@@ -39,15 +42,24 @@ describe('negotiate', () => {
 describe('synthesizeSpeech', () => {
   const payload = { text: 'Your deposit is ten months of rent.', language: 'hi' } as const;
 
-  it('returns the audio blob and asks for audio', async () => {
-    const fetchMock = stubFetch(audioResponse('audio/wav'));
-    const result = await synthesizeSpeech(payload);
+  it('returns the audio blob, the voice that spoke and whether it was translated', async () => {
+    const fetchMock = stubFetch(audioResponse('audio/mpeg', { 'X-Speech-Voice': 'sarvam', 'X-Speech-Translated': '1' }));
+    const result = await synthesizeSpeech({ ...payload, textLanguage: 'en', voice: 'sarvam' });
     expect(result.ok).toBe(true);
-    expect(result.ok ? result.value.type : '').toBe('audio/wav');
-    expect(result.ok ? result.value.size : 0).toBe(WAV_BYTES.length);
-    expect(requestBody(fetchMock, 0)).toEqual(payload);
+    expect(result.ok ? result.value.blob.type : '').toBe('audio/mpeg');
+    expect(result.ok ? result.value.blob.size : 0).toBe(WAV_BYTES.length);
+    expect(result.ok ? result.value.voice : '').toBe('sarvam');
+    expect(result.ok ? result.value.translated : false).toBe(true);
+    expect(requestBody(fetchMock, 0)).toEqual({ ...payload, textLanguage: 'en', voice: 'sarvam' });
     const headers = new Headers(fetchMock.mock.calls[0]?.[1]?.headers);
-    expect(headers.get('Accept')).toBe('audio/wav');
+    expect(headers.get('Accept')).toBe('audio/mpeg, audio/wav');
+  });
+
+  it('reports an unknown or missing voice header as undefined, translated as false', async () => {
+    stubFetch(audioResponse('audio/mpeg'));
+    const result = await synthesizeSpeech(payload);
+    expect(result.ok ? result.value.voice : 'x').toBeUndefined();
+    expect(result.ok ? result.value.translated : true).toBe(false);
   });
 
   it('rejects a successful reply that is not audio', async () => {

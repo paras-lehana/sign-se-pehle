@@ -1,23 +1,32 @@
 /**
- * ListenButton: Gemini audio first, device voice as fallback, one voice at a time, and
- * nothing left playing or allocated after stop, end or unmount.
+ * ListenButton: Google's free voice by default, the reader's chosen voice and listening
+ * language, the device voice as fallback, one voice at a time, and nothing left playing or
+ * allocated after stop, end or unmount.
  */
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { LANGUAGES } from '@sign-se-pehle/core';
 import { ListenButton } from '../../components/features/listen/ListenButton';
+import {
+  LISTEN_LANGUAGE_STORAGE_KEY,
+  VOICE_STORAGE_KEY,
+} from '../../components/layout/preferences';
 import { jsonResponse, requestBody, stubFetch } from '../helpers';
 import { FAKE_BLOB_URL, FakeAudio, installAudioFakes, installSynthesisFake } from './speech-fakes';
 
 const TEXT = 'Your deposit is ten months of rent. The landlord can enter without notice.';
 const HTTP_BAD_GATEWAY = 502;
 
-function audioResponse(): Response {
+function audioResponse(headers: Record<string, string> = {}): Response {
   return new Response(new Uint8Array([82, 73, 70, 70]), {
-    headers: { 'Content-Type': 'audio/wav' },
+    headers: { 'Content-Type': 'audio/mpeg', ...headers },
   });
 }
+
+beforeEach(() => {
+  window.localStorage.clear();
+});
 
 describe('ListenButton', () => {
   it('hides itself when the browser has no way to play speech', () => {
@@ -26,10 +35,10 @@ describe('ListenButton', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  it('plays the Gemini voice, then stops and frees the audio', async () => {
+  it('asks for Google’s free voice by default, in the document’s own language', async () => {
     const user = userEvent.setup();
     const { revokeObjectURL } = installAudioFakes();
-    const fetchMock = stubFetch(audioResponse());
+    const fetchMock = stubFetch(audioResponse({ 'X-Speech-Voice': 'google' }));
     render(<ListenButton text={TEXT} language="hi" label="Listen to the summary" />);
     const listen = screen.getByRole('button', { name: 'Listen to the summary' });
     expect(listen).toHaveAttribute('aria-pressed', 'false');
@@ -38,9 +47,9 @@ describe('ListenButton', () => {
 
     const stop = await screen.findByRole('button', { name: 'Stop' });
     expect(stop).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.getByRole('status')).toHaveTextContent('Playing the Gemini voice.');
+    expect(screen.getByRole('status')).toHaveTextContent('Playing the Google voice.');
     expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/speech');
-    expect(requestBody(fetchMock, 0)).toEqual({ text: TEXT, language: 'hi' });
+    expect(requestBody(fetchMock, 0)).toEqual({ text: TEXT, language: 'hi', voice: 'google' });
     const audio = FakeAudio.instances[0];
     expect(audio?.src).toBe(FAKE_BLOB_URL);
 
@@ -52,6 +61,52 @@ describe('ListenButton', () => {
       'aria-pressed',
       'false',
     );
+  });
+
+  it('uses the stored voice choice and reports it in the status', async () => {
+    window.localStorage.setItem(VOICE_STORAGE_KEY, 'sarvam');
+    const user = userEvent.setup();
+    installAudioFakes();
+    const fetchMock = stubFetch(audioResponse({ 'X-Speech-Voice': 'sarvam' }));
+    render(<ListenButton text={TEXT} language="ta" />);
+
+    await user.click(screen.getByRole('button', { name: 'Listen' }));
+
+    await screen.findByRole('button', { name: 'Stop' });
+    expect(screen.getByRole('status')).toHaveTextContent('Playing the Sarvam voice.');
+    expect(requestBody(fetchMock, 0)).toEqual({ text: TEXT, language: 'ta', voice: 'sarvam' });
+  });
+
+  it('sends the stored listening language and reports when the text was translated', async () => {
+    window.localStorage.setItem(LISTEN_LANGUAGE_STORAGE_KEY, 'ta');
+    const user = userEvent.setup();
+    installAudioFakes();
+    const fetchMock = stubFetch(audioResponse({ 'X-Speech-Voice': 'google', 'X-Speech-Translated': '1' }));
+    render(<ListenButton text={TEXT} language="en" />);
+
+    await user.click(screen.getByRole('button', { name: 'Listen' }));
+
+    await screen.findByRole('button', { name: 'Stop' });
+    expect(requestBody(fetchMock, 0)).toEqual({
+      text: TEXT,
+      language: 'ta',
+      textLanguage: 'en',
+      voice: 'google',
+    });
+    expect(screen.getByRole('status')).toHaveTextContent('Playing the Google voice (translated for you).');
+  });
+
+  it('omits textLanguage when the listening language matches the document', async () => {
+    window.localStorage.setItem(LISTEN_LANGUAGE_STORAGE_KEY, 'hi');
+    const user = userEvent.setup();
+    installAudioFakes();
+    const fetchMock = stubFetch(audioResponse());
+    render(<ListenButton text={TEXT} language="hi" />);
+
+    await user.click(screen.getByRole('button', { name: 'Listen' }));
+    await screen.findByRole('button', { name: 'Stop' });
+
+    expect(requestBody(fetchMock, 0)).toEqual({ text: TEXT, language: 'hi', voice: 'google' });
   });
 
   it('returns to Listen and revokes the URL when the audio ends', async () => {
@@ -82,7 +137,7 @@ describe('ListenButton', () => {
     expect(revokeObjectURL).toHaveBeenCalledWith(FAKE_BLOB_URL);
   });
 
-  it('falls back to the device voice in the reader’s language when Gemini audio fails', async () => {
+  it('falls back to the device voice in the reader’s language when every server voice fails', async () => {
     const user = userEvent.setup();
     installAudioFakes();
     const synthesis = installSynthesisFake();

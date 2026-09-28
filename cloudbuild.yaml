@@ -4,6 +4,7 @@
 # One-time setup (documented in the README):
 #   gcloud artifacts repositories create sign-se-pehle --repository-format=docker --location=asia-south1
 #   printf '%s' "$KEY" | gcloud secrets create gemini-api-key --data-file=-
+#   printf '%s' "$SARVAM_KEY" | gcloud secrets create sarvam-api-key --data-file=-   # optional
 substitutions:
   _REGION: asia-south1
   _SERVICE: sign-se-pehle
@@ -24,20 +25,27 @@ steps:
 
   - id: deploy
     name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
-    entrypoint: gcloud
+    entrypoint: bash
     args:
-      - run
-      - deploy
-      - ${_SERVICE}
-      - --image=${_IMAGE}:${BUILD_ID}
-      - --region=${_REGION}
-      - --platform=managed
-      - --allow-unauthenticated
-      - --min-instances=1
-      - --max-instances=3
-      - --memory=512Mi
-      - --timeout=120
-      - --set-secrets=GEMINI_API_KEY=gemini-api-key:latest
+      - -c
+      - |
+        set -euo pipefail
+        # Sarvam is an optional extra voice; only wire its secret in when the one-time
+        # setup step (see the header comment) has created it.
+        SECRETS="GEMINI_API_KEY=gemini-api-key:latest"
+        if gcloud secrets describe sarvam-api-key >/dev/null 2>&1; then
+          SECRETS="$${SECRETS},SARVAM_API_KEY=sarvam-api-key:latest"
+        fi
+        gcloud run deploy ${_SERVICE} \
+          --image=${_IMAGE}:${BUILD_ID} \
+          --region=${_REGION} \
+          --platform=managed \
+          --allow-unauthenticated \
+          --min-instances=1 \
+          --max-instances=3 \
+          --memory=512Mi \
+          --timeout=120 \
+          --set-secrets="$${SECRETS}"
 
   - id: smoke
     name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim

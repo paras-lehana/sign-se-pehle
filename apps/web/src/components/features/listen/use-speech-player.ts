@@ -1,14 +1,18 @@
 /**
- * Read-aloud state machine: Gemini audio first, the device's own voice as fallback.
+ * Read-aloud state machine: the reader's chosen voice and language first, the device's
+ * own voice as fallback.
  *
  * Responsibility: turn "listen to this text" into idle → loading → playing → idle,
  * with exactly one voice playing across the page and nothing left playing or allocated
- * after stop or unmount. Boundary: fetching lives in lib/api.ts and playback primitives
- * in lib/speech.ts; this hook only sequences them.
+ * after stop or unmount. The voice and listening language are read from the stored
+ * preferences at the moment Listen is pressed (see ListenSettings), so every Listen
+ * button on the page always uses the reader's latest choice. Boundary: fetching lives in
+ * lib/api.ts and playback primitives in lib/speech.ts; this hook only sequences them.
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { LanguageCode } from '@sign-se-pehle/core';
+import { type LanguageCode, VOICE_PROFILES } from '@sign-se-pehle/core';
 import { synthesizeSpeech } from '../../../lib/api';
+import { initialListenLanguagePreference, initialVoicePreference } from '../../layout/preferences';
 import {
   type StopPlayback,
   canPlayAudioBlobs,
@@ -23,15 +27,25 @@ import {
 export type PlayerState = 'idle' | 'loading' | 'playing';
 
 export interface SpeechPlayer {
-  /** False when neither Gemini audio playback nor device speech exists in this browser. */
+  /** False when neither audio playback nor device speech exists in this browser. */
   readonly available: boolean;
   readonly state: PlayerState;
-  /** Short announcement for a live region ("Playing with your device's voice."). */
+  /** Short announcement for a live region ("Playing the Sarvam voice."). */
   readonly status: string;
   readonly toggle: (text: string) => void;
 }
 
 const UNAVAILABLE_STATUS = 'Audio is not available right now. Please try again later.';
+
+/**
+ * Turns which voice spoke, and whether the text was translated, into the live-region status.
+ * @example
+ * playingStatus('sarvam', true); // 'Playing the Sarvam voice (translated for you).'
+ */
+export function playingStatus(voice: string | undefined, translated: boolean): string {
+  const name = voice !== undefined && voice in VOICE_PROFILES ? VOICE_PROFILES[voice as keyof typeof VOICE_PROFILES].spokenName : 'the voice';
+  return translated ? `Playing ${name} (translated for you).` : `Playing ${name}.`;
+}
 
 export function useSpeechPlayer(language: LanguageCode): SpeechPlayer {
   const [available] = useState(() => canPlayAudioBlobs() || canSynthesizeSpeech());
@@ -81,15 +95,21 @@ export function useSpeechPlayer(language: LanguageCode): SpeechPlayer {
       setState('loading');
       setStatus('Preparing audio…');
       if (canPlayAudioBlobs()) {
-        const audio = await synthesizeSpeech({ text: clipForSpeech(text), language });
+        const listenLanguage = initialListenLanguagePreference() ?? language;
+        const audio = await synthesizeSpeech({
+          text: clipForSpeech(text),
+          language: listenLanguage,
+          ...(listenLanguage === language ? {} : { textLanguage: language }),
+          voice: initialVoicePreference(),
+        });
         if (run !== runRef.current) return;
-        const stopAudio = audio.ok ? await playAudioBlob(audio.value, finished) : null;
+        const stopAudio = audio.ok ? await playAudioBlob(audio.value.blob, finished) : null;
         if (run !== runRef.current) {
           stopAudio?.();
           return;
         }
-        if (stopAudio !== null) {
-          playing(stopAudio, 'Playing the Gemini voice.');
+        if (stopAudio !== null && audio.ok) {
+          playing(stopAudio, playingStatus(audio.value.voice, audio.value.translated));
           return;
         }
       }

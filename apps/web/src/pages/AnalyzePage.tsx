@@ -1,10 +1,12 @@
 /**
- * Home page: hero, document-type marquee, the workspace (form, progress, report) and the
- * feature bento.
+ * Home page: hero, document-type marquee, the feature bento ("what you get"), then the
+ * workspace (form, progress, report).
  *
  * Responsibility: own the analyze request lifecycle (idle, loading, error, done) and
  * announce each outcome to assistive technology. Boundary: rendering the report is
- * delegated to components/report; validation to AnalyzeForm and the core schema.
+ * delegated to components/report; validation to AnalyzeForm and the core schema. The bento
+ * comes before the workspace so a first-time reader sees everything the report will contain
+ * before being asked to paste a document.
  */
 import { type ReactElement, useState } from 'react';
 import type { AnalyzeRequest } from '@sign-se-pehle/core';
@@ -48,6 +50,7 @@ export function AnalyzePage(): ReactElement {
     <>
       <Hero />
       <DocTypeMarquee />
+      <FeatureBento />
       <section id="workspace" className="workspace" aria-labelledby="workspace-heading">
         <div className="section-head">
           <p className="eyebrow">Your workspace</p>
@@ -76,7 +79,6 @@ export function AnalyzePage(): ReactElement {
       {state.status === 'done' ? (
         <ReportWorkspace key={state.analysis.id} analysis={state.analysis} />
       ) : null}
-      <FeatureBento />
     </>
   );
 }

@@ -30,7 +30,7 @@ import { createConcurrencyGate } from './services/concurrency.js';
 import type { GenAiClient } from './services/genai-client.js';
 import { createNegotiationService } from './services/negotiation-service.js';
 import { createQaService } from './services/qa-service.js';
-import type { SpeechClient } from './services/speech-client.js';
+import type { SpeechService } from './services/speech-service.js';
 import { registerStaticWeb } from './static-web.js';
 
 /** Model-backed routes cost quota: 30 per minute per IP is generous for a human reader. */
@@ -61,7 +61,7 @@ const TRUSTED_PROXY_HOPS = 1;
 
 export interface AppDeps {
   readonly genai: GenAiClient;
-  readonly speech: SpeechClient;
+  readonly speech: SpeechService;
   readonly now: () => number;
   readonly logger: Logger;
 }
@@ -76,7 +76,7 @@ function securityHeaders(): ReturnType<typeof helmet> {
         scriptSrc: [self],
         styleSrc: [self],
         imgSrc: [self, 'data:'],
-        // Read-aloud plays synthesised WAV audio from a blob: URL created in the page.
+        // Read-aloud plays audio (MP3 or WAV) from a blob: URL created in the page.
         mediaSrc: [self, 'blob:'],
         connectSrc: [self],
         fontSrc: [self],

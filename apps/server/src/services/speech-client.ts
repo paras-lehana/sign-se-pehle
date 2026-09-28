@@ -7,8 +7,9 @@
  * the injected `SpeechCaller`, and neither the text nor upstream bodies are ever logged or
  * returned in errors.
  */
-import { type Result, appError, base64ToBytes, err, ok } from '@sign-se-pehle/core';
+import { type Result, appError, base64ToBytes, err, ok, pcmToWav } from '@sign-se-pehle/core';
 import { failoverOrder, isRetryableStatus, rejectOnAbort, statusOf } from './genai-client.js';
+import { type VoiceEngine, checkedAudio } from './voice-engine.js';
 
 /** Inline audio as the SDK returns it. */
 export interface SpeechAudio {
@@ -126,4 +127,21 @@ export function createSpeechClient(options: SpeechClientOptions): SpeechClient {
 export function createOfflineSpeechClient(): SpeechClient {
   const offline = appError('UPSTREAM_FAILURE', SPEECH_UNAVAILABLE, 'no API key configured');
   return { configured: false, synthesize: () => Promise.resolve(err(offline)) };
+}
+
+/**
+ * The Gemini client as a read-aloud voice: its 16-bit PCM is wrapped in a WAV header. Gemini
+ * reads the language from the text itself, so the language argument is not sent.
+ * @example
+ * const gemini = geminiVoice(speechClient); await gemini.speak('Namaste', 'hi');
+ */
+export function geminiVoice(client: SpeechClient): VoiceEngine {
+  return {
+    configured: client.configured,
+    async speak(text) {
+      const speech = await client.synthesize({ text });
+      if (!speech.ok) return speech;
+      return checkedAudio(pcmToWav(speech.value.pcm, speech.value.sampleRate), 'audio/wav', 'gemini speech');
+    },
+  };
 }

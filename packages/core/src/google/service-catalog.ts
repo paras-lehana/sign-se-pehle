@@ -47,9 +47,17 @@ export const GOOGLE_SERVICES: readonly ServiceCatalogEntry[] = [
     id: 'gemini-tts',
     name: 'Gemini text-to-speech',
     status: 'live',
-    purpose: 'Reads summaries and answers aloud in a natural voice for readers who prefer listening; the browser’s own voice is the fallback.',
+    purpose: 'One of three read-aloud voices readers can pick, alongside Google Translate’s free voice and Sarvam; the browser’s own voice is the last-resort fallback.',
     codePaths: ['apps/server/src/services/speech-client.ts', 'apps/server/src/services/gemini-sdk.ts', 'packages/core/src/audio/wav.ts'],
     envVars: ['GEMINI_TTS_MODELS'],
+  },
+  {
+    id: 'google-translate-free',
+    name: 'Google Translate (free)',
+    status: 'live',
+    purpose: 'The default, no-key read-aloud voice and translator: speaks and translates between all 11 app languages so a reader can listen in a language other than the one the document was explained in.',
+    codePaths: ['apps/server/src/services/google-free-client.ts', 'packages/core/src/speech/chunks.ts'],
+    envVars: [],
   },
   {
     id: 'cloud-run',

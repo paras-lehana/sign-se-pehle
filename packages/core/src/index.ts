@@ -32,6 +32,8 @@ export * from './engine/xray.js';
 export * from './engine/eligibility.js';
 export * from './engine/deadline.js';
 export * from './audio/wav.js';
+export * from './speech/voices.js';
+export * from './speech/chunks.js';
 export * from './privacy/redact.js';
 export * from './genai/prompt-boundary.js';
 export * from './genai/prompts.js';

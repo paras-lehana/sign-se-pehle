@@ -4,6 +4,41 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.3.0] — 2026-09-28
+
+Read-aloud in a choice of voice and language, and the feature bento moved above the workspace.
+
+### Added
+
+- Read-aloud now has three voices, picked by the reader (`ListenSettings`, stored per device):
+  **Google Translate's free web API** (default, no key, speaks 10 of 11 languages), **Sarvam AI**
+  (`bulbul:v3`, all 11 languages including Odia, opt-in), and **Gemini text-to-speech** (unchanged
+  from 0.2.0). Each falls back to the next that speaks the language if it fails.
+- Listen in a different language than the document was explained in (`X-Speech-Translated`
+  response header): the text is translated first, using Sarvam's own translator for the Sarvam
+  voice and Google Translate's free translator otherwise, before the chosen voice speaks it.
+- `POST /api/speech` gains `voice` and `textLanguage`, and its response carries `X-Speech-Voice`
+  (which voice actually spoke) and `X-Speech-Translated`.
+- The bento grid ("Everything you need before you sign") now renders above "Your workspace" /
+  "Check a document", so a first-time reader sees what the report contains before pasting anything.
+
+### Changed
+
+- `services/speech-client.ts`'s Gemini client is now one of three interchangeable voice engines
+  behind a shared contract (`services/voice-engine.ts`); `services/speech-service.ts` orchestrates
+  translation and the voice fallback order from a table in `packages/core/src/speech/voices.ts`.
+- Read-aloud text is redacted the same way document text is before any translator or voice
+  (including Sarvam and Google's free endpoints) ever sees it.
+
+### Verified
+
+- `npm run type-check`, `npm run lint` (zero warnings), `npm run dup-check` (0 clones).
+- `npm run test:coverage`: 598 tests (core 360, server 108, web 130); every new speech module at
+  100% statement, branch and line coverage.
+- `npx playwright test`: 32 tests (journeys + axe, desktop and Pixel 7, both themes) — unchanged
+  from 0.2.0; the voice/language picker was verified in a live browser pass instead (see
+  `docs/tasks/2026-09-28-listen-11-languages/`).
+
 ## [0.2.0] — 2026-09-27
 
 "Midnight glass" redesign and the features that set Sign Se Pehle apart.

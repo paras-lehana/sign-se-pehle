@@ -12,6 +12,13 @@ curl -fsS -o /dev/null -w "   %{http_code} in %{time_total}s\n" "${BASE}/"
 echo "--> GET /api/health"
 curl -fsS "${BASE}/api/health"; echo
 
+echo "--> POST /api/speech (read-aloud voices)"
+curl -fsS -o /tmp/smoke-speech.bin -D - -X POST "${BASE}/api/speech" \
+  -H 'content-type: application/json' \
+  -d '{"text":"Read every clause before you sign.","language":"en"}' \
+  | grep -i '^x-speech-voice\|^content-type' | tr -d '\r'
+echo "   $(wc -c < /tmp/smoke-speech.bin) bytes of audio"; rm -f /tmp/smoke-speech.bin
+
 echo "--> POST /api/analyze (live Gemini path)"
 BODY='{"language":"en","role":"tenant","document":{"type":"text","text":"RENT AGREEMENT. 1. Rent: The tenant shall pay Rs. 20,000 per month. 2. Security deposit: The tenant shall pay a security deposit of Rs. 1,20,000 refundable at the sole discretion of the landlord. 3. The landlord may enter the premises at any time without notice."}}'
 curl -fsS -X POST "${BASE}/api/analyze" -H 'content-type: application/json' -d "${BODY}" \

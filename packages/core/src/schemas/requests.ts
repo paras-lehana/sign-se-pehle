@@ -8,6 +8,7 @@
 import { z } from 'zod';
 import { DOCUMENT_KINDS, SCENARIO_IDS, USER_ROLES } from '../domain/document-kinds.js';
 import { LANGUAGE_CODES } from '../domain/languages.js';
+import { SPEECH_VOICES } from '../speech/voices.js';
 import { clauseSchema, redFlagSchema } from './analysis.js';
 import { documentFactsSchema } from './facts.js';
 import {
@@ -152,7 +153,12 @@ export type EligibilityRequest = z.infer<typeof eligibilityRequestSchema>;
 
 export const speechRequestSchema = z.strictObject({
   text: z.string().trim().min(1).max(MAX_SPEECH_CHARS),
+  /** The language to speak in. */
   language,
+  /** The language the text is written in; when it differs from `language` it is translated first. */
+  textLanguage: language.optional(),
+  /** The reader's choice of voice; the server uses DEFAULT_SPEECH_VOICE when it is absent. */
+  voice: z.enum(SPEECH_VOICES).optional(),
 });
 
 export type SpeechRequest = z.infer<typeof speechRequestSchema>;

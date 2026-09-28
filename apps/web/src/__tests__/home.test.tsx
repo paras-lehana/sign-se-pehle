@@ -65,4 +65,12 @@ describe('Home page', () => {
         .map((heading) => heading.textContent),
     ).toEqual(FEATURES.map((feature) => feature.title));
   });
+
+  it('shows what you get before asking for a document', () => {
+    renderAt(<AnalyzePage />);
+    const bento = screen.getByRole('region', { name: 'Everything you need before you sign' });
+    const workspace = screen.getByRole('region', { name: 'Check a document' });
+    // DOCUMENT_POSITION_FOLLOWING: bento is earlier in the document than the workspace section.
+    expect(bento.compareDocumentPosition(workspace) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
 });

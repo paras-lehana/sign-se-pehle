@@ -30,6 +30,21 @@ const DEFAULT_GEMINI_MODELS = ['gemini-3.5-flash-lite', 'gemini-3.1-flash-lite',
  */
 const DEFAULT_GEMINI_TTS_MODELS = ['gemini-3.1-flash-tts-preview', 'gemini-2.5-flash-preview-tts'];
 
+/** Sarvam retired bulbul:v2 (the API answered 400 on 27 Sep 2026); v3 is current. */
+const DEFAULT_SARVAM_TTS_MODEL = 'bulbul:v3';
+
+/** Sarvam's documented default speaker for bulbul:v3. */
+const DEFAULT_SARVAM_SPEAKER = 'shubh';
+
+/** Translates between all 11 app languages (checked live with Odia on 27 Sep 2026). */
+const DEFAULT_SARVAM_TRANSLATE_MODEL = 'sarvam-translate:v1';
+
+/**
+ * Per call to Google's free voice, Sarvam or a translator: Sarvam took 4.5 s for 1,400
+ * characters live, so 20 s is generous without holding a connection for long.
+ */
+const DEFAULT_SPEECH_TIMEOUT_MS = 20_000;
+
 /** Highest valid TCP port. */
 const MAX_PORT = 65_535;
 
@@ -48,6 +63,13 @@ export interface ServerConfig {
   /** Failover order for read-aloud (Gemini text-to-speech). */
   readonly geminiTtsModels: readonly string[];
   readonly geminiTimeoutMs: number;
+  /** Absent means the Sarvam voice and translator are off; Google's free voice still works. */
+  readonly sarvamApiKey: string | undefined;
+  readonly sarvamTtsModel: string;
+  readonly sarvamSpeaker: string;
+  readonly sarvamTranslateModel: string;
+  /** Timeout for each call to Google's free endpoints and to Sarvam. */
+  readonly speechTimeoutMs: number;
   readonly webDistDir: string;
   readonly nodeEnv: 'production' | 'development' | 'test';
   readonly appVersion: string;
@@ -66,6 +88,16 @@ const envSchema = z.object({
     .min(1)
     .max(MAX_GEMINI_TIMEOUT_MS)
     .default(DEFAULT_GEMINI_TIMEOUT_MS),
+  SARVAM_API_KEY: z.string().optional(),
+  SARVAM_TTS_MODEL: z.string().trim().min(1).default(DEFAULT_SARVAM_TTS_MODEL),
+  SARVAM_SPEAKER: z.string().trim().min(1).default(DEFAULT_SARVAM_SPEAKER),
+  SARVAM_TRANSLATE_MODEL: z.string().trim().min(1).default(DEFAULT_SARVAM_TRANSLATE_MODEL),
+  SPEECH_TIMEOUT_MS: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(MAX_GEMINI_TIMEOUT_MS)
+    .default(DEFAULT_SPEECH_TIMEOUT_MS),
   WEB_DIST_DIR: z.string().trim().min(1).optional(),
   NODE_ENV: z.enum(['production', 'development', 'test']).default('development'),
 });
@@ -91,6 +123,12 @@ function parseModels(value: string | undefined, defaults: readonly string[]): re
   return Object.freeze(models.length > 0 ? models : [...defaults]);
 }
 
+/** A secret that is blank after trimming counts as absent. */
+function optionalSecret(value: string | undefined): string | undefined {
+  const trimmed = value?.trim();
+  return trimmed !== undefined && trimmed.length > 0 ? trimmed : undefined;
+}
+
 /**
  * Parses the environment into a frozen {@link ServerConfig}. Invalid numeric values
  * throw at startup on purpose: a misconfigured service should fail its deploy, not serve.
@@ -99,13 +137,17 @@ function parseModels(value: string | undefined, defaults: readonly string[]): re
  */
 export function loadConfig(env: EnvSource = process.env): ServerConfig {
   const parsed = envSchema.parse(env);
-  const key = parsed.GEMINI_API_KEY?.trim();
   return Object.freeze({
     port: parsed.PORT,
-    geminiApiKey: key !== undefined && key.length > 0 ? key : undefined,
+    geminiApiKey: optionalSecret(parsed.GEMINI_API_KEY),
     geminiModels: parseModels(parsed.GEMINI_MODELS, DEFAULT_GEMINI_MODELS),
     geminiTtsModels: parseModels(parsed.GEMINI_TTS_MODELS, DEFAULT_GEMINI_TTS_MODELS),
     geminiTimeoutMs: parsed.GEMINI_TIMEOUT_MS,
+    sarvamApiKey: optionalSecret(parsed.SARVAM_API_KEY),
+    sarvamTtsModel: parsed.SARVAM_TTS_MODEL,
+    sarvamSpeaker: parsed.SARVAM_SPEAKER,
+    sarvamTranslateModel: parsed.SARVAM_TRANSLATE_MODEL,
+    speechTimeoutMs: parsed.SPEECH_TIMEOUT_MS,
     webDistDir: parsed.WEB_DIST_DIR ?? DEFAULT_WEB_DIST_DIR,
     nodeEnv: parsed.NODE_ENV,
     appVersion: readAppVersion(),

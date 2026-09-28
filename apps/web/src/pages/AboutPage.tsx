@@ -38,6 +38,11 @@ export function AboutPage(): ReactElement {
             No accounts, no tracking scripts, no third-party fonts — the page only talks to its own
             server.
           </li>
+          <li>
+            Read-aloud sends only the sentence you asked to hear, never the rest of your document,
+            to Google Translate’s free voice (the default, no account needed) or, if you choose it
+            in the Voice picker, Sarvam AI — an Indian-language voice service.
+          </li>
         </ul>
       </section>
         <section className="card" aria-labelledby="disclaimer-heading">

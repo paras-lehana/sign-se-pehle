@@ -22,7 +22,11 @@ import {
   type Result,
   type SimulateRequest,
   type SpeechRequest,
+  type SpeechVoice,
   HTTP_STATUS_BY_CODE,
+  SPEECH_TRANSLATED_HEADER,
+  SPEECH_VOICES,
+  SPEECH_VOICE_HEADER,
   analysisSchema,
   askResponseSchema,
   compareResponseSchema,
@@ -168,18 +172,35 @@ export function negotiate(payload: NegotiateRequest): Promise<Result<NegotiateRe
   return request('/api/negotiate', negotiateResponseSchema, payload);
 }
 
+/** Read-aloud audio plus what the server says about it. */
+export interface SpeechAudio {
+  readonly blob: Blob;
+  /** The voice that actually spoke; undefined if the header is missing or unknown. */
+  readonly voice: SpeechVoice | undefined;
+  /** True when the text was translated into the listening language first. */
+  readonly translated: boolean;
+}
+
+const speechVoiceSchema = z.enum(SPEECH_VOICES);
+
 /**
- * POST /api/speech — Gemini read-aloud audio. Anything that is not audio (an HTML error
- * page from a proxy, a JSON body) is rejected so the caller falls back to device speech.
+ * POST /api/speech — read-aloud audio (MP3 from Google or Sarvam, WAV from Gemini). Anything
+ * that is not audio (an HTML error page from a proxy, a JSON body) is rejected so the
+ * caller falls back to device speech.
  */
-export async function synthesizeSpeech(payload: SpeechRequest): Promise<Result<Blob, ApiError>> {
-  const sent = await send('/api/speech', payload, 'audio/wav');
+export async function synthesizeSpeech(payload: SpeechRequest): Promise<Result<SpeechAudio, ApiError>> {
+  const sent = await send('/api/speech', payload, 'audio/mpeg, audio/wav');
   if (!sent.ok) return sent;
-  const contentType = sent.value.headers.get('content-type') ?? '';
-  if (!contentType.startsWith('audio/')) return err(unreadableResponse(sent.value.status));
+  const { headers, status } = sent.value;
+  if (!(headers.get('content-type') ?? '').startsWith('audio/')) return err(unreadableResponse(status));
+  const voice = speechVoiceSchema.safeParse(headers.get(SPEECH_VOICE_HEADER));
   try {
-    return ok(await sent.value.blob());
+    return ok({
+      blob: await sent.value.blob(),
+      voice: voice.success ? voice.data : undefined,
+      translated: headers.get(SPEECH_TRANSLATED_HEADER) === '1',
+    });
   } catch {
-    return err(unreadableResponse(sent.value.status));
+    return err(unreadableResponse(status));
   }
 }

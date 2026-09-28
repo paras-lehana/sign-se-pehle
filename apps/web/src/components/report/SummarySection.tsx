@@ -8,6 +8,7 @@ import type { ReactElement } from 'react';
 import type { LanguageCode, RiskScore } from '@sign-se-pehle/core';
 import type { Analysis } from '../../lib/api';
 import { ListenButton } from '../features/listen/ListenButton';
+import { ListenSettings } from '../features/listen/ListenSettings';
 import { ReportSection } from './ReportSection';
 
 interface SummarySectionProps {
@@ -27,6 +28,7 @@ export function SummarySection({ summary, score, language }: SummarySectionProps
       <p className="summary__one-line">{summary.oneLine}</p>
       <div className="summary__listen">
         <ListenButton text={summarySpeech(summary)} language={language} label="Listen to the summary" />
+        <ListenSettings />
       </div>
       {summary.keyPoints.length > 0 ? (
         <ul className="summary__points">

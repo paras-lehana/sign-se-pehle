@@ -38,3 +38,14 @@ export const LANGUAGES: Readonly<Record<LanguageCode, LanguageInfo>> = {
 };
 
 export const DEFAULT_LANGUAGE: LanguageCode = 'en';
+
+/**
+ * How the language pickers name a language: the endonym, then the English name.
+ * @example
+ * languageLabel('hi'); // 'हिन्दी (Hindi)'
+ * languageLabel('en'); // 'English'
+ */
+export function languageLabel(code: LanguageCode): string {
+  const { englishName, nativeName } = LANGUAGES[code];
+  return code === 'en' ? englishName : `${nativeName} (${englishName})`;
+}

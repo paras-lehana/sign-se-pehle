@@ -25,7 +25,7 @@ phones — so the interface is built for keyboards, screen readers, zoom and sma
 | A header button pauses all decorative motion (mesh drift, scan illustration, marquee); the choice is remembered | [`components/layout/MotionToggle.tsx`](apps/web/src/components/layout/MotionToggle.tsx) | 2.2.2 |
 | X-ray highlights are real buttons named "Clause: …, high risk"; the document box is keyboard-scrollable | [`components/features/xray`](apps/web/src/components/features/xray) | 2.1.1, 1.3.1 |
 | Glossary terms open popovers with `aria-expanded`; Escape, the close button or a click outside closes them and returns focus | [`components/features/glossary`](apps/web/src/components/features/glossary) | 1.4.13, 2.4.3 |
-| Read-aloud buttons use `aria-pressed` and announce status; voice input only appears where the browser supports it | [`components/features/listen`](apps/web/src/components/features/listen) | 4.1.3 |
+| Read-aloud buttons use `aria-pressed` and announce status (which voice spoke, whether it was translated); the Voice and Listen-in pickers are ordinary labelled `<select>`s; voice input only appears where the browser supports it | [`components/features/listen`](apps/web/src/components/features/listen) | 4.1.3, 1.3.1 |
 | Legal-aid check uses native checkboxes in a fieldset with a visible legend | [`components/features/next-steps`](apps/web/src/components/features/next-steps) | 1.3.1, 3.3.2 |
 | Lint gate includes `eslint-plugin-jsx-a11y` (strict) | [`eslint.config.js`](eslint.config.js) | — |
 

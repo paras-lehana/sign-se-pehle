@@ -14,7 +14,36 @@
 }
 
 .summary__listen {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-5);
   margin-bottom: var(--space-4);
+}
+
+.listen-settings {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+}
+
+.field--compact {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.field--compact label {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.field--compact select {
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--text-sm);
 }
 
 .summary__points {

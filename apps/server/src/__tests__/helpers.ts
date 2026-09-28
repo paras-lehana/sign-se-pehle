@@ -18,7 +18,8 @@ import {
   createGenAiClient,
   createOfflineGenAiClient,
 } from '../services/genai-client.js';
-import { type SpeechClient, createOfflineSpeechClient } from '../services/speech-client.js';
+import { type SpeechService, createSpeechService } from '../services/speech-service.js';
+import { unconfiguredTranslator, unconfiguredVoice } from '../services/voice-engine.js';
 
 /** A realistic (fictional) Indian rent agreement: deposit is 5x rent, so rules must fire. */
 export const RENTAL_TEXT = [
@@ -91,6 +92,11 @@ export function makeConfig(overrides: Partial<ServerConfig> = {}): ServerConfig 
     geminiModels: TEST_MODELS,
     geminiTtsModels: TEST_TTS_MODELS,
     geminiTimeoutMs: 1_000,
+    sarvamApiKey: undefined,
+    sarvamTtsModel: 'bulbul:test',
+    sarvamSpeaker: 'test-speaker',
+    sarvamTranslateModel: 'translate:test',
+    speechTimeoutMs: 1_000,
     webDistDir: join(tmpdir(), 'sign-se-pehle-no-web-build'),
     nodeEnv: 'test',
     appVersion: '9.9.9',
@@ -105,16 +111,34 @@ export interface TestApp {
   readonly logger: Logger;
 }
 
+/** Builds a speech service over the app's logger (tests pass voices and translators). */
+export type SpeechFactory = (logger: Logger) => SpeechService;
+
+/** Every voice and translator unconfigured: read-aloud always answers 502. */
+export const offlineSpeech: SpeechFactory = (logger) =>
+  createSpeechService({
+    voices: {
+      google: unconfiguredVoice('google speech'),
+      sarvam: unconfiguredVoice('sarvam speech'),
+      gemini: unconfiguredVoice('gemini speech'),
+    },
+    translators: {
+      google: unconfiguredTranslator('google translate'),
+      sarvam: unconfiguredTranslator('sarvam translate'),
+    },
+    logger,
+  });
+
 /** Builds the real app with a fake clock, captured logs and the given clients. */
 export function makeApp(
   genai: GenAiClient = createOfflineGenAiClient(),
   overrides: Partial<ServerConfig> = {},
-  speech: SpeechClient = createOfflineSpeechClient(),
+  speech: SpeechFactory = offlineSpeech,
 ): TestApp {
   const clock = createFakeClock();
   const logs: string[] = [];
   const logger = createJsonLogger((line) => logs.push(line));
-  const app = buildApp(makeConfig(overrides), { genai, speech, now: clock.now, logger });
+  const app = buildApp(makeConfig(overrides), { genai, speech: speech(logger), now: clock.now, logger });
   return { app, clock, logs, logger };
 }
 

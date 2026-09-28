@@ -7,17 +7,25 @@
  * then apply for this visit. The theme-colour meta tag reads the token, never a literal.
  */
 
+import { type LanguageCode, LANGUAGE_CODES, type SpeechVoice, SPEECH_VOICES, DEFAULT_SPEECH_VOICE } from '@sign-se-pehle/core';
+
 export type Theme = 'light' | 'dark';
 
 export const THEME_STORAGE_KEY = 'sign-se-pehle:theme';
 export const MOTION_STORAGE_KEY = 'sign-se-pehle:motion';
+export const VOICE_STORAGE_KEY = 'sign-se-pehle:voice';
+export const LISTEN_LANGUAGE_STORAGE_KEY = 'sign-se-pehle:listen-language';
+
+/** The sentinel stored (and shown in the picker) for "listen in whatever language it was explained in". */
+export const LISTEN_LANGUAGE_SAME_AS_DOCUMENT = 'same';
 
 /** Midnight glass is designed dark-first; light is an explicit, remembered choice. */
 export const DEFAULT_THEME: Theme = 'dark';
 
 const MOTION_PAUSED = 'paused';
 
-function readPreference(key: string): string | null {
+/** Reads a stored preference; null when absent or when storage is blocked. */
+export function readPreference(key: string): string | null {
   try {
     return window.localStorage.getItem(key);
   } catch {
@@ -75,4 +83,38 @@ export function storeMotionPaused(paused: boolean): void {
 export function applyStoredPreferences(): void {
   applyTheme(initialTheme());
   applyMotion(initialMotionPaused());
+}
+
+/**
+ * The reader's chosen read-aloud voice; Google's free voice ({@link DEFAULT_SPEECH_VOICE}) is
+ * the default so nothing needs choosing before Listen works.
+ * @example
+ * initialVoicePreference(); // 'google' on a first visit
+ */
+export function initialVoicePreference(): SpeechVoice {
+  const stored = readPreference(VOICE_STORAGE_KEY);
+  return (SPEECH_VOICES as readonly string[]).includes(stored ?? '')
+    ? (stored as SpeechVoice)
+    : DEFAULT_SPEECH_VOICE;
+}
+
+/** Stores the reader's voice choice. */
+export function storeVoicePreference(voice: SpeechVoice): void {
+  storePreference(VOICE_STORAGE_KEY, voice);
+}
+
+/**
+ * The reader's chosen listening language, or undefined to match whatever language the
+ * document was explained in (no translation call, the cheapest and most accurate default).
+ * @example
+ * initialListenLanguagePreference(); // undefined on a first visit
+ */
+export function initialListenLanguagePreference(): LanguageCode | undefined {
+  const stored = readPreference(LISTEN_LANGUAGE_STORAGE_KEY);
+  return (LANGUAGE_CODES as readonly string[]).includes(stored ?? '') ? (stored as LanguageCode) : undefined;
+}
+
+/** Stores the reader's listening-language choice; `undefined` stores the "same as document" sentinel. */
+export function storeListenLanguagePreference(language: LanguageCode | undefined): void {
+  storePreference(LISTEN_LANGUAGE_STORAGE_KEY, language ?? LISTEN_LANGUAGE_SAME_AS_DOCUMENT);
 }

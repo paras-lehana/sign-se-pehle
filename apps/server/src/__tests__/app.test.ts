@@ -12,7 +12,12 @@ describe('health and catalog', () => {
     const { app } = makeApp();
     const res = await request(app).get('/api/health');
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({ status: 'ok', version: '9.9.9', ai: { configured: false, models: [] } });
+    expect(res.body).toEqual({
+      status: 'ok',
+      version: '9.9.9',
+      ai: { configured: false, models: [] },
+      speech: { voices: [] },
+    });
     expect(res.headers['cache-control']).toBe('no-store');
   });
 

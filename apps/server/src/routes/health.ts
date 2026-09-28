@@ -1,7 +1,8 @@
 /**
  * GET /api/health — liveness plus AI configuration, used by the deploy smoke test.
  *
- * Boundary: reports model names and whether a key exists, never the key itself.
+ * Boundary: reports model names, whether a key exists and which read-aloud voices can run,
+ * never a key itself.
  */
 import type { Router } from 'express';
 import type { RouteContext } from './context.js';
@@ -13,6 +14,7 @@ export function registerHealth(router: Router, ctx: RouteContext): void {
       status: 'ok',
       version: ctx.config.appVersion,
       ai: { configured: ctx.genai.configured, models: [...ctx.genai.models] },
+      speech: { voices: [...ctx.speech.voices] },
     });
   });
 }
